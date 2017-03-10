@@ -66,7 +66,7 @@ func main() {
 1. Unit tests
 2. Some optimization for data structure
 3. Error Handling with detail information
-4. User could set their own headers
+4. User could set his own headers
 
 ## License
 
