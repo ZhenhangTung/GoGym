@@ -9,6 +9,59 @@
 	$ go get github.com/ZhenhangTung/GoGym
 	```
 
+## Steps of implementation
+1. Define a controller
+
+	```go
+	type IndexController struct {
+	}
+	```
+2. Define an action in the controller
+
+	```go
+	func (IndexController *IndexController) Index(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+		return 200, map[string]string{"hello": "world"}
+	}
+	```
+3. Prepare the service
+	
+	```go
+	var apiService = GoGym.Prepare()
+	```
+
+4. Set your path with Controller and Action
+
+
+	```go
+	apiService.Get("index", "IndexController@Index") // GET Method
+	apiService.Get("users", "IndexController@GetUsers")
+	apiService.Post("index", "IndexController@Post") // Post Method
+	apiService.Put("index", "IndexController@Post") // Post Method
+	apiService.Delete("index", "IndexController@Delete") // Delete Method
+	apiService.Options("index", "IndexController@Options") // Options Method
+	apiService.Patch("index", "IndexController@Patch") // Patch Method
+	```
+5. Register your controller
+	* Register a single controller
+
+	
+	```go
+	apiService.RegisterController(&FooController{})
+	```
+	* Register mutiple controllers
+
+	
+	```go
+	controllers := []interface{}{&IndexController{}}
+	apiService.RegisterControllers(controllers)
+	```
+6. Start to Serve
+
+
+	``` go
+	apiService.Serve(3000)
+	```
+
 ## Code Example
 
 ```go
