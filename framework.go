@@ -31,43 +31,47 @@ type APIService struct {
 }
 
 func (api *APIService) Get(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(GETMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(GETMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 func (api *APIService) Post(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(POSTMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(POSTMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 func (api *APIService) Put(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(PUTMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(PUTMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 func (api *APIService) Patch(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(PATCHMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(PATCHMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 func (api *APIService) Options(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(OPTIONSMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(OPTIONSMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 func (api *APIService) Delete(path, controllerWithActionString string) {
-	mapping := api.mappingRequestMethodWithControllerAndActions(DELETEMethod, controllerWithActionString)
+	mapping := api.mappingRequestMethodWithControllerAndActions(DELETEMethod, path, controllerWithActionString)
 	api.registeredPathAndController[path] = mapping
 }
 
 // mappingRequestMethodWithControllerAndActions is a function for mapping request method with controllers
 // which containing actions
-func (*APIService) mappingRequestMethodWithControllerAndActions(requestMethod, controllerWithActionString string) map[string]map[string]string {
+func (api *APIService) mappingRequestMethodWithControllerAndActions(requestMethod, path, controllerWithActionString string) map[string]map[string]string {
+	mappingResult := make(map[string]map[string]string)
+	if length := len(api.registeredPathAndController[path]); length > 0 {
+		mappingResult = api.registeredPathAndController[path]
+	}
 	controllerAndActionSlice := strings.Split(controllerWithActionString, "@")
 	controller := controllerAndActionSlice[0]
 	action := controllerAndActionSlice[1]
 	controllerAndActionMap := map[string]string{controller: action}
-	mappingResult := map[string]map[string]string{requestMethod: controllerAndActionMap}
+	mappingResult[requestMethod] = controllerAndActionMap
 	return mappingResult
 }
 
