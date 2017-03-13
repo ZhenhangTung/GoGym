@@ -98,7 +98,10 @@ func (api *APIService) HandleRequest(controllers map[string]map[string]string) h
 // RegisterHandleFunc is a function registers a handle function to handle request from path
 func (api *APIService) RegisterHandleFunc() {
 	for k, v := range api.registeredPathAndController {
-		path := fmt.Sprintf("/%v", k)
+		path := k
+		if !strings.HasPrefix(k, "/") {
+			path = fmt.Sprintf("/%v", k)
+		}
 		http.HandleFunc(path, api.HandleRequest(v))
 	}
 }

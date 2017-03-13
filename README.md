@@ -33,7 +33,7 @@
 
 
 	```go
-	apiService.Get("index", "IndexController@Index") // GET Method
+	apiService.Get("/", "IndexController@Index") // GET Method
 	apiService.Get("users", "IndexController@GetUsers")
 	apiService.Post("index", "IndexController@Post") // Post Method
 	apiService.Put("index", "IndexController@Post") // Post Method
