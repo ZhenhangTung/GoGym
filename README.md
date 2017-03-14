@@ -78,14 +78,14 @@ import (
 type IndexController struct {
 }
 
-func (IndexController *IndexController) Index(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (IndexController *IndexController) Index(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"hello": "world"}
 }
 
 type BarController struct {
 }
 
-func (*BarController) Bar(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"GoTo": "Bar"}
 }
 
