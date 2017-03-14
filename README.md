@@ -118,10 +118,11 @@ func main() {
 ## Notice
 ```GoGym``` now is still in development, it needs:
 
-1. Unit tests
+1. <strike>Unit tests</strike>
 2. Some optimization for data structure
 3. Error Handling with detail information
 4. User could set his own headers
+5. Support all http methods in [document](https://golang.org/pkg/net/http/#pkg-constants)
 
 ## License
 
