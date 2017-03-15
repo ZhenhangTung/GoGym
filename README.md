@@ -1,6 +1,7 @@
 ![](http://tongzhenhang.me/wp-content/uploads/2017/03/dumbbell-1.png)
 <div style="font-size: 10px;">Icons made by <a href="http://www.flaticon.com/authors/vectors-market" title="Vectors Market">Vectors Market</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 # GoGym
+[![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
 
 ```GoGym ``` is a micro-framework for building RESTful APIs, which is written in ```Golang```. It is inspired by an artisan framework [Laravel](https://laravel.com/).
 
@@ -130,13 +131,13 @@ func main() {
 	```
 
 ## Notice
-```GoGym``` now is still in development, it needs:
+```GoGym``` now is still in development, features in development now:
 
 1. <strike>Unit tests</strike>
 2. Some optimization for data structure
 3. Error Handling with detail information
 4. User could set his own headers
-
+5. <strike>Handle input form easily<strike>
 
 
 ## License
