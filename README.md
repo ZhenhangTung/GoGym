@@ -106,8 +106,8 @@ func (IndexController *IndexController) Index(request map[string]url.Values, hea
 type BarController struct {
 }
 
-func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
-	return 200, map[string]string{"GoTo": "Bar"}
+func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}, responseHeader http.Header) {
+	return 200, map[string]string{"GoTo": "Bar"}, http.Header{"Foo": {"Bar", "Baz"}}
 }
 
 func main() {
@@ -140,10 +140,9 @@ func main() {
 ```GoGym``` now is still in development, features in development now:
 
 1. <strike>Unit tests</strike>
-2. Some optimization for data structure
-3. Error Handling with detail information
-4. User could set his own headers
-5. <strike>Handle input form easily</strike>
+2. Error Handling with detail information: considered as a error service, which would be done in the next version
+3. <strike>User could set his own headers</strike>
+4. <strike>Handle input form easily</strike>
 
 
 ## License

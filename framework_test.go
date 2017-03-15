@@ -2,6 +2,7 @@ package GoGym
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -9,6 +10,10 @@ import (
 	"testing"
 	"time"
 )
+
+func init() {
+	fmt.Println("Tests started")
+}
 
 var formTest url.Values
 
@@ -53,6 +58,11 @@ func (IndexController *IndexController) QueryForm(request map[string]url.Values,
 func (IndexController *IndexController) PostForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	formTest = request["form"]
 	return 200, helloResponse
+}
+
+func (IndexController *IndexController) SetHeaders(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}, responseHeader http.Header) {
+
+	return 200, helloResponse, http.Header{"Foo": {"Bar", "Baz"}, "Gogym": {"Yeah"}}
 }
 
 func TestGet(t *testing.T) {
@@ -175,6 +185,30 @@ func TestRequestWithForm(t *testing.T) {
 	myClient.PostForm("http://localhost:3000/requests/form-method/form", requestForm)
 	if !reflect.DeepEqual(formTest, requestForm) {
 		t.Error("received form is not same as requested form")
+	}
+}
+
+func TestHeader(t *testing.T) {
+	var apiService = Prepare()
+	apiService.Get("/requests/headers", "IndexController@SetHeaders")
+	apiService.RegisterController(&IndexController{})
+	go apiService.Serve(3000)
+	r, err := myClient.Get("http://localhost:3000/requests/headers")
+	if err != nil {
+		t.Error(err)
+	}
+	responseHeaders := r.Header
+	expectedHeaders := http.Header{"Foo": {"Bar", "Baz"}, "Gogym": {"Yeah"}, "Content-Type": {"application/json"}}
+
+	// Check if all expected headers exist in response
+	for k, v := range expectedHeaders {
+		header, isset := responseHeaders[k]
+		if !isset {
+			t.Error("response headers didn't match as expected")
+		}
+		if !reflect.DeepEqual(v, header) {
+			t.Error("content of the response header didn't match as expected")
+		}
 	}
 }
 
