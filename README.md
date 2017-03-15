@@ -64,6 +64,20 @@
 	apiService.Serve(3000)
 	```
 
+## How to get request
+In your controller's action, for example as below:
+
+```go
+func (IndexController *IndexController) QueryForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
+	query := request["query"]
+	form := request["form"]
+}
+```
+* ```request["query"]``` is for getting query string for all requests
+* ```request["form"]``` is for getting form when requests are ```POST```, ```PUT```, and ```PATCH``` requests
+
+
+
 ## Code Example
 
 ```go
