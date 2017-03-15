@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"github.com/golang/glog"
 )
 
+// HTTP Methods
 const (
 	GETMethod     = "GET"
 	POSTMethod    = "POST"
@@ -17,8 +19,22 @@ const (
 	OPTIONSMethod = "OPTIONS"
 )
 
+//MIME Types
 const (
-	HTTPMethodNotAllowed = 405
+	MIME_APP_JSON = "application/json"
+	//MIME_APP_JSON_CHARSETUTF8 = MIME_APP_JSON + ";" + "charset=UTF-8"
+	//MIME_APP_FORM = "application/x-www-form-urlencoded"
+	//MIME_APP_PB   = "application/protobuf"
+)
+
+//HTTP Codes
+const (
+	HTTPMethodNotAllowed = http.StatusMethodNotAllowed
+	//HTTPNotFound = http.StatusNotFound
+	//HTTPUnauthorized = http.StatusUnauthorized
+	//HTTPTooManyRequests = http.StatusTooManyRequests
+	//HTTPBadGateway = http.StatusBadGateway
+	//HTTPBadRequest = http.StatusBadRequest
 )
 
 // APIService for now is the struct for containing controllerRegistry and registeredPathAndController,
@@ -28,6 +44,7 @@ type APIService struct {
 	controllerRegistry map[string]interface{}
 	//registeredPathAndController is a mapping of paths and controllers
 	registeredPathAndController map[string]map[string]map[string]string // TODO：optimize the data structure of registeredPathAndController
+
 }
 
 func (api *APIService) Get(path, controllerWithActionString string) {
@@ -142,12 +159,13 @@ func (api *APIService) Serve(port int) {
 // JSONResponse is a function return json response
 func (api *APIService) JSONResponse(rw http.ResponseWriter, statusCode int, response interface{}) {
 	// TODO: accept headers
-	rw.Header().Set("Content-Type", "application/json")
+	rw.Header().Set("Content-Type", MIME_APP_JSON)
 	rw.WriteHeader(statusCode)
 	rsp, err := json.Marshal(response)
 	if err != nil {
 		// TODO: logging error
-		fmt.Println("JSON err:", err)
+		glog.Error(fmt.Sprintf("JSON err: %s", err))
+		//fmt.Println("JSON err:", err)
 	}
 	rw.Write(rsp)
 }
