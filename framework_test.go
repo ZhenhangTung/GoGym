@@ -2,9 +2,9 @@ package GoGym
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -51,7 +51,7 @@ func (IndexController *IndexController) QueryForm(request map[string]url.Values,
 }
 
 func (IndexController *IndexController) PostForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
-	formTest = request["body"]
+	formTest = request["form"]
 	return 200, helloResponse
 }
 
@@ -145,25 +145,37 @@ func TestPatch(t *testing.T) {
 	}
 }
 
-// func TestRequestWithQuery(t *testing.T) {
-// 	var apiService = Prepare()
-// 	apiService.Get("/requests/form-method/query", "IndexController@QueryForm")
-// 	apiService.RegisterController(&IndexController{})
-// 	go apiService.Serve(3000)
-// }
+func TestRequestWithQuery(t *testing.T) {
+	var apiService = Prepare()
+	apiService.Get("/requests/form-method/query", "IndexController@QueryForm")
+	apiService.RegisterController(&IndexController{})
+	go apiService.Serve(3000)
+	var requestQuery = url.Values{"api_key": {"gogym"}, "foo": {"bar&baz"}}
+	request, _ := http.NewRequest("GET", "http://localhost:3000/requests/form-method/query", nil)
+	q := request.URL.Query()
+	q.Add("api_key", "gogym")
+	q.Add("foo", "bar&baz")
+	request.URL.RawQuery = q.Encode()
+	response, err := myClient.Do(request)
+	if err != nil {
+		t.Error(err)
+	}
+	defer response.Body.Close()
+	if !reflect.DeepEqual(formTest, requestQuery) {
+		t.Error("received query is not same as requested query")
+	}
+}
 
 func TestRequestWithForm(t *testing.T) {
 	var apiService = Prepare()
-	apiService.Get("/requests/form-method/form", "IndexController@PostForm")
+	apiService.Post("/requests/form-method/form", "IndexController@PostForm")
 	apiService.RegisterController(&IndexController{})
 	go apiService.Serve(3000)
-	// requestForm := url.Values{"foo": {"bar"}}
-	// myClient.PostForm("http://localhost:3000/requests/form-method/form", requestForm)
-	// if formTest != requestForm {
-	// 	t.Error("something went wrong when receiving form")
-	// }
-	fmt.Println(formTest)
-
+	requestForm := url.Values{"foo": {"bar", "baz"}}
+	myClient.PostForm("http://localhost:3000/requests/form-method/form", requestForm)
+	if !reflect.DeepEqual(formTest, requestForm) {
+		t.Error("received form is not same as requested form")
+	}
 }
 
 var myClient = &http.Client{Timeout: 10 * time.Second}
