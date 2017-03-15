@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 	"github.com/golang/glog"
@@ -45,6 +46,7 @@ type APIService struct {
 	//registeredPathAndController is a mapping of paths and controllers
 	registeredPathAndController map[string]map[string]map[string]string // TODO：optimize the data structure of registeredPathAndController
 
+	requestForm                 map[string]url.Values
 }
 
 func (api *APIService) Get(path, controllerWithActionString string) {
@@ -97,6 +99,8 @@ func (api *APIService) HandleRequest(controllers map[string]map[string]string) h
 	return func(rw http.ResponseWriter, request *http.Request) {
 		request.ParseForm()
 		method := request.Method
+		api.requestForm["query"] = request.Form
+		api.requestForm["form"] = request.PostForm
 		macthedControllers, ok := controllers[method]
 		if !ok {
 			rw.WriteHeader(HTTPMethodNotAllowed)
@@ -105,7 +109,7 @@ func (api *APIService) HandleRequest(controllers map[string]map[string]string) h
 			controllerKey := "*" + k
 			controller := api.controllerRegistry[controllerKey]
 			in := make([]reflect.Value, 2)
-			in[0] = reflect.ValueOf(request.Form)
+			in[0] = reflect.ValueOf(api.requestForm)
 			in[1] = reflect.ValueOf(request.Header)
 			returnValues := reflect.ValueOf(controller).MethodByName(v).Call(in)
 			statusCode := returnValues[0].Interface()
@@ -175,5 +179,6 @@ func Prepare() *APIService {
 	var apiService = new(APIService)
 	apiService.controllerRegistry = make(map[string]interface{})
 	apiService.registeredPathAndController = make(map[string]map[string]map[string]string)
+	apiService.requestForm = make(map[string]url.Values)
 	return apiService
 }

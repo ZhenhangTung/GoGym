@@ -1,6 +1,13 @@
 ![](http://tongzhenhang.me/wp-content/uploads/2017/03/dumbbell-1.png)
 <div style="font-size: 10px;">Icons made by <a href="http://www.flaticon.com/authors/vectors-market" title="Vectors Market">Vectors Market</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
-# GoGym
+
+
+# GoGym  
+
+
+
+[![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
+
 
 ```GoGym ``` is a micro-framework for building RESTful APIs, which is written in ```Golang```. It is inspired by an artisan framework [Laravel](https://laravel.com/).
 
@@ -64,6 +71,20 @@
 	apiService.Serve(3000)
 	```
 
+## How to get request
+In your controller's action, for example as below:
+
+```go
+func (IndexController *IndexController) QueryForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
+	query := request["query"]
+	form := request["form"]
+}
+```
+* ```request["query"]``` is for getting query string for all requests
+* ```request["form"]``` is for getting form when requests are ```POST```, ```PUT```, and ```PATCH``` requests
+
+
+
 ## Code Example
 
 ```go
@@ -78,14 +99,14 @@ import (
 type IndexController struct {
 }
 
-func (IndexController *IndexController) Index(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (IndexController *IndexController) Index(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"hello": "world"}
 }
 
 type BarController struct {
 }
 
-func (*BarController) Bar(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"GoTo": "Bar"}
 }
 
@@ -116,13 +137,13 @@ func main() {
 	```
 
 ## Notice
-```GoGym``` now is still in development, it needs:
+```GoGym``` now is still in development, features in development now:
 
 1. <strike>Unit tests</strike>
 2. Some optimization for data structure
 3. Error Handling with detail information
 4. User could set his own headers
-
+5. <strike>Handle input form easily</strike>
 
 
 ## License
