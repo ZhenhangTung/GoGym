@@ -64,6 +64,20 @@
 	apiService.Serve(3000)
 	```
 
+## How to get request
+In your controller's action, for example as below:
+
+```go
+func (IndexController *IndexController) QueryForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
+	query := request["query"]
+	form := request["form"]
+}
+```
+* ```request["query"]``` is for getting query string for all requests
+* ```request["form"]``` is for getting form when requests are ```POST```, ```PUT```, and ```PATCH``` requests
+
+
+
 ## Code Example
 
 ```go
@@ -78,14 +92,14 @@ import (
 type IndexController struct {
 }
 
-func (IndexController *IndexController) Index(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (IndexController *IndexController) Index(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"hello": "world"}
 }
 
 type BarController struct {
 }
 
-func (*BarController) Bar(values url.Values, headers http.Header) (statusCode int, response interface{}) {
+func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
 	return 200, map[string]string{"GoTo": "Bar"}
 }
 
