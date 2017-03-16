@@ -3,11 +3,11 @@ package GoGym
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
-	"github.com/golang/glog"
 )
 
 // HTTP Methods
@@ -46,7 +46,7 @@ type APIService struct {
 	//registeredPathAndController is a mapping of paths and controllers
 	registeredPathAndController map[string]map[string]map[string]string // TODO：optimize the data structure of registeredPathAndController
 
-	requestForm                 map[string]url.Values
+	requestForm map[string]url.Values
 }
 
 func (api *APIService) Get(path, controllerWithActionString string) {
