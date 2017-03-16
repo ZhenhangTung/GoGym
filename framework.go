@@ -115,7 +115,11 @@ func (api *APIService) HandleRequest(controllers map[string]map[string]string) h
 			statusCode := returnValues[0].Interface()
 			intStatusCode := statusCode.(int)
 			response := returnValues[1].Interface()
-			api.JSONResponse(rw, intStatusCode, response)
+			responseHeaders := http.Header{}
+			if len(returnValues) == 3 {
+				responseHeaders = returnValues[2].Interface().(http.Header)
+			}
+			api.JSONResponse(rw, intStatusCode, response, responseHeaders)
 		}
 	}
 }
@@ -161,9 +165,13 @@ func (api *APIService) Serve(port int) {
 }
 
 // JSONResponse is a function return json response
-func (api *APIService) JSONResponse(rw http.ResponseWriter, statusCode int, response interface{}) {
-	// TODO: accept headers
-	rw.Header().Set("Content-Type", MIME_APP_JSON)
+func (api *APIService) JSONResponse(rw http.ResponseWriter, statusCode int, response interface{}, headers http.Header) {
+	for k, v := range headers {
+		for _, header := range v {
+			rw.Header().Add(k, header)
+		}
+	}
+	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(statusCode)
 	rsp, err := json.Marshal(response)
 	if err != nil {
