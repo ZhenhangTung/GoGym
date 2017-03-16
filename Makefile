@@ -18,12 +18,12 @@ endif
 all: check-path test race install
 
 install:
-	gp install $(GOGYM_PKGS) $$(go list ./... | grep -v /vendor/)
+	gp install $(GO_EXTRAFLAGS) $(GOGYM_PKGS) $$(go list ./... | grep -v /vendor/)
 
 test:
-	go clean $(GOGYM_PKGS)
-	go test $(GOGYM_PKGS)
+	go clean $(GO_EXTRAFLAGS) $(GOGYM_PKGS)
+	go test $(GO_EXTRAFLAGS) $(GOGYM_PKGS)
 
 race:
-	go test -race -i $(GOGYM_PKGS)
-	go test -race $(GOGYM_PKGS)
+	go test $(GO_EXTRAFLAGS) -race -i $(GOGYM_PKGS)
+	go test $(GO_EXTRAFLAGS) -race $(GOGYM_PKGS)
