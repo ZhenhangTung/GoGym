@@ -30,6 +30,10 @@ type APIService struct {
 	//registeredPathAndController is a mapping of paths and controllers
 	registeredPathAndController map[string]map[string]map[string]string
 	requestForm                 map[string]url.Values
+
+	// request & response service
+	Request  *Request
+	Response *Response
 }
 
 func (api *APIService) Get(path, controllerWithActionString string) {
@@ -80,6 +84,8 @@ func (api *APIService) mappingRequestMethodWithControllerAndActions(requestMetho
 // HandleRequest is a function to handle http request
 func (api *APIService) HandleRequest(controllers map[string]map[string]string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
+		api.Request.accept(request)
+		api.Response.prepare(rw)
 		request.ParseForm()
 		method := request.Method
 		api.requestForm["query"] = request.Form
@@ -170,5 +176,9 @@ func Prepare() *APIService {
 	apiService.controllerRegistry = make(map[string]interface{})
 	apiService.registeredPathAndController = make(map[string]map[string]map[string]string)
 	apiService.requestForm = make(map[string]url.Values)
+
+	// regiser request & response
+	apiService.Request = new(Request)
+	apiService.Response = new(Response)
 	return apiService
 }

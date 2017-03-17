@@ -1,7 +1,13 @@
 package GoGym
 
 import (
-	"fmt"
+	// "fmt"
+	"net/http"
 )
 
-type Request struct{}
+type Request struct {
+}
+
+func (r *Request) accept(request *http.Request) {
+
+}

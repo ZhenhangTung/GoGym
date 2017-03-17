@@ -1,7 +1,7 @@
 package GoGym
 
 import (
-	"fmt"
+	// "fmt"
 	"net/http"
 )
 
@@ -12,5 +12,9 @@ type Response struct {
 }
 
 func (r *Response) JsonResponse(statusCode int, resp interface{}, header http.Header) {
+
+}
+
+func (r *Response) prepare(rw http.ResponseWriter) {
 
 }
