@@ -124,7 +124,8 @@ func main() {
 
 
 ## Notice
-```GoGym``` now is still in development which means that it is still <b>unstable</b>, and it has changed a lot since the time when it was open source. I believe these changes are impressive and brings more flexibility to ```GoGym```.  ```v0.1``` is on schedule and would be comming soon.
+```GoGym``` now is still in development which means that it is still <b>unstable</b>, and it has changed a lot since the time when it was open source. I believe these changes are impressive and brings more flexibility to ```GoGym```.  ```v0.1``` is on schedule and would be comming soon.   
+Thanks for everyone who support this project.
 
 
 ## License
