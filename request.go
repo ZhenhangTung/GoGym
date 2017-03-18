@@ -3,6 +3,7 @@ package GoGym
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 )
 
 const (
@@ -41,6 +42,10 @@ func (r *Request) WhoIsYourBoss(g *Gym) {
 // CallYourBoss is a method gets the service container
 func (r *Request) CallYourBoss() *Gym {
 	return r.boss
+}
+
+func (r *Request) CallService(method string, param []interface{}) []reflect.Value {
+	return []reflect.Value{}
 }
 
 // accept is a method gets the http request and parse it

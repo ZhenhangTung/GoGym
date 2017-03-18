@@ -4,11 +4,26 @@ import (
 	"reflect"
 )
 
-// getType is a function gets the type of value
-func getType(value interface{}) string {
+// GetType is a function gets the type of value
+func GetType(value interface{}) string {
 	if t := reflect.TypeOf(value); t.Kind() == reflect.Ptr {
 		return "*" + t.Elem().Name()
 	} else {
 		return t.Name()
 	}
+}
+
+func CallServiceMethodWithReflect(g GymService, method string, param []interface{}) []reflect.Value {
+	length := len(param)
+	var in []reflect.Value
+	if length > 0 {
+		in = make([]reflect.Value, length)
+		for k, v := range param {
+			in[k] = reflect.ValueOf(v)
+		}
+	} else {
+		in = []reflect.Value{}
+	}
+	results := reflect.ValueOf(g).MethodByName(method).Call(in)
+	return results
 }

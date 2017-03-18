@@ -38,6 +38,10 @@ func (r *Router) CallYourBoss() *Gym {
 	return r.boss
 }
 
+func (r *Router) CallMethod(method string, param []interface{}) []reflect.Value {
+	return []reflect.Value{}
+}
+
 // Get is a fucntion handles GET requests
 func (r *Router) Get(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(GETMethod, path, controllerWithActionString)
@@ -129,6 +133,6 @@ func (r *Router) RegisterControllers(controllers []interface{}) {
 
 // RegisterControllers is a method registers a controller into controllerRegistry
 func (r *Router) RegisterController(controller interface{}) {
-	controllerType := getType(controller)
+	controllerType := GetType(controller)
 	r.controllerRegistry[controllerType] = controller
 }

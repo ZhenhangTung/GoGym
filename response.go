@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 )
 
 const (
@@ -38,6 +39,10 @@ func (r *Response) WhoIsYourBoss(g *Gym) {
 // CallYourBoss is a method gets the service container
 func (r *Response) CallYourBoss() *Gym {
 	return r.boss
+}
+
+func (r *Response) CallMethod(method string, param []interface{}) []reflect.Value {
+	return []reflect.Value{}
 }
 
 // JsonResponse is a method prepares the JSON response
