@@ -18,131 +18,114 @@
 	$ go get github.com/ZhenhangTung/GoGym
 	```
 
-## Steps of implementation
-1. Define a controller
+## How to use ```GoGym```
 
-	```go
-	type IndexController struct {
-	}
-	```
-2. Define an action in the controller
+### ```Gym```
+```Gym``` is a service container :   
 
-	```go
-	func (IndexController *IndexController) Index(values url.Values, headers http.Header) (statusCode int, response interface{}) {
-		return 200, map[string]string{"hello": "world"}
-	}
-	```
-3. Prepare the service
-	
-	```go
-	var apiService = GoGym.Prepare()
-	```
+* ```RegisterService(name string, service GymService)``` : RegisterService registers user's own service into service container
+* ```RegisterServices(services map[string]GymService)``` : RegisterServices is a function registers mutiple services
+* ```GetService(name string) GymService``` : GetService is a fucntion gets a service from ```Gym```
+* ```CallServiceMethod(service GymService, method string, param []interface{}) []reflect.Value``` : CallServiceMethod is a function call a method of service
+* ```Prepare() *Gym``` :  Prepare is a function prepares the service container
+* ```OpenAt(port int)``` : OpenAt is a function which is used to serve the service
 
-4. Set your path with Controller and Action
+### ```Router```
+* ```Get(path, controllerWithActionString string)``` : Get is a fucntion handles GET requests
+* ```Post(path, controllerWithActionString string)``` : Post is a fucntion handles POST requests
+* ```Put(path, controllerWithActionString string)``` : Put is a method handles PUT requests
+* ```Patch(path, controllerWithActionString string)``` : Patch is a method handles PATCH requests
+* ```Options(path, controllerWithActionString string)``` : Options is a method handles Options requests
+* ```Delete(path, controllerWithActionString string)``` : Delete is a method handles Delete requests
+* ```RegisterController``` : RegisterControllers is a method registers a controller into controllerRegistry
+* ```RegisterControllers``` : RegisterControllers is a method registers a struct of controllers into controllerRegistry
 
+### ```Request``` 
+* ```Request.Method```: It gets the method of the http request
+* ```Request.Header```: It gets the header of the http request
+* ```Request.Query``` : It parses query of the http request
+* ```Request.Form``` : It parses request form of the http request
 
-	```go
-	apiService.Get("/", "IndexController@Index") // GET Method
-	apiService.Get("users", "IndexController@GetUsers")
-	apiService.Post("index", "IndexController@Post") // Post Method
-	apiService.Put("index", "IndexController@Post") // Post Method
-	apiService.Delete("index", "IndexController@Delete") // Delete Method
-	apiService.Options("index", "IndexController@Options") // Options Method
-	apiService.Patch("index", "IndexController@Patch") // Patch Method
-	```
-5. Register your controller
-	* Register a single controller
+### ```Response```
+* ```JsonResponse(resp interface{}, statusCode int, header http.Header)```: ```JsonResponse ``` accept response, status code and http header to generate http JSON response.
 
-	
-	```go
-	apiService.RegisterController(&FooController{})
-	```
-	* Register mutiple controllers
+### ```Helpers```
+* ```GetType(value interface{}) string``` : GetType is a function gets the type of value
+* ```CallServiceMethodWithReflect(g GymService, method string, param []interface{}) []reflect.Value``` : CallServiceMethodWithReflect is a functon calls user's own service method
 
-	
-	```go
-	controllers := []interface{}{&IndexController{}}
-	apiService.RegisterControllers(controllers)
-	```
-6. Start to Serve
-
-
-	``` go
-	apiService.Serve(3000)
-	```
-
-## How to get request
-In your controller's action, for example as below:
-
-```go
-func (IndexController *IndexController) QueryForm(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
-	query := request["query"]
-	form := request["form"]
-}
-```
-* ```request["query"]``` is for getting query string for all requests
-* ```request["form"]``` is for getting form when requests are ```POST```, ```PUT```, and ```PATCH``` requests
+## Want to implement your own service?
+1. Implement ```GymService``` interface
+2. Pass your service into ```Gym``` using method ```RegisterService``` or ```RegisterServices```
+3. Get your service using method ```GetService```
+4. Call the service's method using ```CallMethod ```
+5. You could write your own ```CallMethod ``` or use the helper function ```CallServiceMethodWithReflect()```
 
 
 
 ## Code Example
 
+
 ```go
 package main
 
 import (
-    "net/url"
-    "net/http"
-    "github.com/ZhenhangTung/GoGym"
+	"fmt"
+	"github.com/ZhenhangTung/GoGym"
+	"net/http"
+	"reflect"
 )
 
-type IndexController struct {
+type HelloController struct {
 }
 
-func (IndexController *IndexController) Index(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}) {
-	return 200, map[string]string{"hello": "world"}
+func (h *HelloController) SayHello(api *GoGym.Gym) {
+	api.Response.JsonResponse(map[string]string{"hello": "world"}, 200, http.Header{})
 }
 
-type BarController struct {
+type FooService struct {
+	boss *GoGym.Gym
 }
 
-func (*BarController) Bar(request map[string]url.Values, headers http.Header) (statusCode int, response interface{}, responseHeader http.Header) {
-	return 200, map[string]string{"GoTo": "Bar"}, http.Header{"Foo": {"Bar", "Baz"}}
+func (f *FooService) Prepare(g *GoGym.Gym) {
+	f.WhoIsYourBoss(g)
+}
+
+func (f *FooService) WhoIsYourBoss(g *GoGym.Gym) {
+	f.boss = g
+}
+
+func (f *FooService) CallYourBoss() *GoGym.Gym {
+	return f.boss
+}
+
+func (f *FooService) Test() {
+	fmt.Println("oh yes")
+}
+
+func (f *FooService) CallMethod(method string, param []interface{}) []reflect.Value {
+	r := GoGym.CallServiceMethodWithReflect(f, method, param)
+	return r
 }
 
 func main() {
-	var apiService = GoGym.Prepare()
-	apiService.Get("index", "IndexController@Index")
-	apiService.Post("bar", "BarController@Bar")
-	controllers := []interface{}{&IndexController{}}
-	apiService.RegisterControllers(controllers)
-	apiService.RegisterController(&BarController{})
-	apiService.Serve(3000)
+	var gym = new(GoGym.Gym)
+	gym.Prepare()
+	gym.Router.RegisterController(&HelloController{})
+	gym.Router.Get("/", "HelloController@SayHello")
+	gym.RegisterService("Foo", new(FooService))
+	gym.GetService("Foo").CallMethod("Test", nil)
+	gym.OpenAt(3000)
 }
+
+
+// Then open the http://localhost:3000 to see the result
+
 ```
 
-## Running result
-* Test GET Request
-
-	```bash
-	$ curl localhost:3000/index
-	{"hello":"world"}
-	```
-
-* Test POST Request
-
-	```bash
-	$ curl -H "Content-Type: application/json" -d '{"hello":"world"}' http://localhost:3000/bar
-	{"GoTo":"Bar"}
-	```
 
 ## Notice
-```GoGym``` now is still in development, features in development now:
-
-1. <strike>Unit tests</strike>
-2. Error Handling with detail information: considered as a error service, which would be done in the next version
-3. <strike>User could set his own headers</strike>
-4. <strike>Handle input form easily</strike>
+```GoGym``` now is still in development which means that it is still <b>unstable</b>, and it has changed a lot since the time when it was open source. I believe these changes are impressive and brings more flexibility to ```GoGym```.  ```v0.1``` is on schedule and would be comming soon.   
+Thanks for everyone who support this project.
 
 
 ## License
