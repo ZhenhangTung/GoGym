@@ -1,11 +1,8 @@
 package GoGym
 
 import (
-	// "fmt"
-	// "encoding/json"
 	"net/http"
 	"net/url"
-	// "reflect"
 )
 
 const (

@@ -11,7 +11,7 @@ type Gym struct {
 	Router   *Router
 	Request  *Request
 	Response *Response
-	service  map[string]GymService
+	services map[string]GymService
 }
 
 // RegisterService registers service into service container
@@ -29,11 +29,11 @@ func (g *Gym) RegisterServices(services map[string]GymService) {
 }
 
 func (g *Gym) bindService(name string, service GymService) {
-	g.service[name] = service
+	g.services[name] = service
 }
 
 func (g *Gym) GetService(name string) GymService {
-	return g.service[name]
+	return g.services[name]
 }
 
 func (r *Request) CallServiceMethod(service GymService, method string, param []interface{}) {
@@ -51,7 +51,7 @@ func (r *Request) CallServiceMethod(service GymService, method string, param []i
 }
 
 func (g *Gym) Prepare() *Gym {
-	g.service = make(map[string]GymService)
+	g.services = make(map[string]GymService)
 	g.Router = new(Router)
 	g.Router.Prepare(g)
 	g.Request = new(Request)
@@ -61,8 +61,8 @@ func (g *Gym) Prepare() *Gym {
 	return g
 }
 
-// Serve is a function
-func (g *Gym) Open(port int) {
+// OpenAt is a function which is used to serve the service
+func (g *Gym) OpenAt(port int) {
 	g.Router.RegisterHandleFunc()
 	fullPort := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(fullPort, nil)

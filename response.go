@@ -1,7 +1,6 @@
 package GoGym
 
 import (
-	// "fmt"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -40,16 +39,12 @@ func (r *Response) CallYourBoss() *Gym {
 func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) {
 	r.respone = resp
 	r.statusCode = statusCode
-	fmt.Println("header:", header)
-	// headerWithJsonResponse := header.Add("Content-Type", "application/json")
-	// header["Content-Type"] = "application/json"
 	var respHeader http.Header
 	if header != nil {
 		respHeader = header
 		respHeader.Add("Content-Type", "application/json")
 	} else {
 		respHeader.Add("Content-Type", "application/json")
-		// header = http.Header{"Content-Type": {"application/json"}}
 	}
 
 	r.header = respHeader
