@@ -49,24 +49,30 @@
 ### ```Response```
 * ```JsonResponse(resp interface{}, statusCode int, header http.Header)```: ```JsonResponse ``` accept response, status code and http header to generate http JSON response.
 
+### ```Helpers```
+* ```GetType(value interface{}) string``` : GetType is a function gets the type of value
+* ```CallServiceMethodWithReflect(g GymService, method string, param []interface{}) []reflect.Value``` : CallServiceMethodWithReflect is a functon calls user's own service method
 
 ## Want to implement your own service?
 1. Implement ```GymService``` interface
 2. Pass your service into ```Gym``` using method ```RegisterService``` or ```RegisterServices```
 3. Get your service using method ```GetService```
-4. Call the service's method using ```CallServiceMethod```
+4. Call the service's method using ```CallMethod ```
+5. You could write your own ```CallMethod ``` or use the helper function ```CallServiceMethodWithReflect()```
 
 
 
-## Code Example (How to get a Hello World)
+## Code Example
+
 
 ```go
 package main
 
 import (
-    "net/url"
-    "net/http"
-    "github.com/ZhenhangTung/GoGym"
+	"fmt"
+	"github.com/ZhenhangTung/GoGym"
+	"net/http"
+	"reflect"
 )
 
 type HelloController struct {
@@ -76,13 +82,41 @@ func (h *HelloController) SayHello(api *GoGym.Gym) {
 	api.Response.JsonResponse(map[string]string{"hello": "world"}, 200, http.Header{})
 }
 
+type FooService struct {
+	boss *GoGym.Gym
+}
+
+func (f *FooService) Prepare(g *GoGym.Gym) {
+	f.WhoIsYourBoss(g)
+}
+
+func (f *FooService) WhoIsYourBoss(g *GoGym.Gym) {
+	f.boss = g
+}
+
+func (f *FooService) CallYourBoss() *GoGym.Gym {
+	return f.boss
+}
+
+func (f *FooService) Test() {
+	fmt.Println("oh yes")
+}
+
+func (f *FooService) CallMethod(method string, param []interface{}) []reflect.Value {
+	r := GoGym.CallServiceMethodWithReflect(f, method, param)
+	return r
+}
+
 func main() {
 	var gym = new(GoGym.Gym)
 	gym.Prepare()
 	gym.Router.RegisterController(&HelloController{})
 	gym.Router.Get("/", "HelloController@SayHello")
+	gym.RegisterService("Foo", new(FooService))
+	gym.GetService("Foo").CallMethod("Test", nil)
 	gym.OpenAt(3000)
 }
+
 
 // Then open the http://localhost:3000 to see the result
 
