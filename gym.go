@@ -40,7 +40,7 @@ func (g *Gym) GetService(name string) GymService {
 }
 
 // CallServiceMethod is a function call a method of service
-func (r *Request) CallServiceMethod(service GymService, method string, param []interface{}) {
+func (r *Request) CallServiceMethod(service GymService, method string, param []interface{}) []reflect.Value {
 	length := len(param)
 	var in []reflect.Value
 	if length > 0 {
@@ -51,7 +51,8 @@ func (r *Request) CallServiceMethod(service GymService, method string, param []i
 	} else {
 		in = []reflect.Value{}
 	}
-	reflect.ValueOf(service).MethodByName(method).Call(in)
+	results := reflect.ValueOf(service).MethodByName(method).Call(in)
+	return results
 }
 
 // Prepare is a function prepares the service container
