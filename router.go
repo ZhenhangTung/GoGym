@@ -21,19 +21,19 @@ type Router struct {
 	registeredPathAndController map[string]map[string]map[string]string
 }
 
-// Prepare is a function prepares the router service
+// Prepare is a method prepares the router service
 func (r *Router) Prepare(g *Gym) {
 	r.WhoIsYourBoss(g)
 	r.controllerRegistry = make(map[string]interface{})
 	r.registeredPathAndController = make(map[string]map[string]map[string]string)
 }
 
-// WhoIsYourBoss is a function sets the service container into the Router
+// WhoIsYourBoss is a method sets the service container into the Router
 func (r *Router) WhoIsYourBoss(g *Gym) {
 	r.boss = g
 }
 
-// CallYourBoss is a function gets the service container
+// CallYourBoss is a method gets the service container
 func (r *Router) CallYourBoss() *Gym {
 	return r.boss
 }
@@ -50,31 +50,31 @@ func (r *Router) Post(path, controllerWithActionString string) {
 	r.registeredPathAndController[path] = mapping
 }
 
-// Put is a function handles PUT requests
+// Put is a method handles PUT requests
 func (r *Router) Put(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(PUTMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
-// Patch is a function handles PATCH requests
+// Patch is a method handles PATCH requests
 func (r *Router) Patch(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(PATCHMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
-// Options is a function handles Options requests
+// Options is a method handles Options requests
 func (r *Router) Options(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(OPTIONSMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
-// Delete is a function handles Delete requests
+// Delete is a method handles Delete requests
 func (r *Router) Delete(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(DELETEMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
-// mappingRequestMethodWithControllerAndActions is a function for mapping request method with controllers
+// mappingRequestMethodWithControllerAndActions is a method for mapping request method with controllers
 // which containing actions
 func (r *Router) mappingRequestMethodWithControllerAndActions(requestMethod, path, controllerWithActionString string) map[string]map[string]string {
 	mappingResult := make(map[string]map[string]string)
@@ -89,7 +89,7 @@ func (r *Router) mappingRequestMethodWithControllerAndActions(requestMethod, pat
 	return mappingResult
 }
 
-// HandleRequest is a function to handle http request
+// HandleRequest is a method to handle http request
 func (r *Router) HandleRequest(controllers map[string]map[string]string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 		r.CallYourBoss().Request.accept(request)
@@ -109,7 +109,7 @@ func (r *Router) HandleRequest(controllers map[string]map[string]string) http.Ha
 	}
 }
 
-// RegisterHandleFunc is a function registers a handle function to handle request from path
+// RegisterHandleFunc is a method registers a handle function to handle request from path
 func (r *Router) RegisterHandleFunc() {
 	for k, v := range r.registeredPathAndController {
 		path := k
@@ -120,14 +120,14 @@ func (r *Router) RegisterHandleFunc() {
 	}
 }
 
-// RegisterControllers is a function registers a struct of controllers into controllerRegistry
+// RegisterControllers is a method registers a struct of controllers into controllerRegistry
 func (r *Router) RegisterControllers(controllers []interface{}) {
 	for _, v := range controllers {
 		r.RegisterController(v)
 	}
 }
 
-// RegisterControllers is a function registers a controller into controllerRegistry
+// RegisterControllers is a method registers a controller into controllerRegistry
 func (r *Router) RegisterController(controller interface{}) {
 	controllerType := getType(controller)
 	r.controllerRegistry[controllerType] = controller
