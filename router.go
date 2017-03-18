@@ -11,6 +11,7 @@ const (
 	ServiceRouter = "Router"
 )
 
+// Router service
 type Router struct {
 	boss *Gym // Service Container
 
@@ -20,45 +21,54 @@ type Router struct {
 	registeredPathAndController map[string]map[string]map[string]string
 }
 
+// Prepare is a function prepares the router service
 func (r *Router) Prepare(g *Gym) {
 	r.WhoIsYourBoss(g)
 	r.controllerRegistry = make(map[string]interface{})
 	r.registeredPathAndController = make(map[string]map[string]map[string]string)
 }
 
+// WhoIsYourBoss is a function sets the service container into the Router
 func (r *Router) WhoIsYourBoss(g *Gym) {
 	r.boss = g
 }
 
+// CallYourBoss is a function gets the service container
 func (r *Router) CallYourBoss() *Gym {
 	return r.boss
 }
 
+// Get is a fucntion handles GET requests
 func (r *Router) Get(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(GETMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
+// Post is a fucntion handles POST requests
 func (r *Router) Post(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(POSTMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
+// Put is a function handles PUT requests
 func (r *Router) Put(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(PUTMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
+// Patch is a function handles PATCH requests
 func (r *Router) Patch(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(PATCHMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
+// Options is a function handles Options requests
 func (r *Router) Options(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(OPTIONSMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
 }
 
+// Delete is a function handles Delete requests
 func (r *Router) Delete(path, controllerWithActionString string) {
 	mapping := r.mappingRequestMethodWithControllerAndActions(DELETEMethod, path, controllerWithActionString)
 	r.registeredPathAndController[path] = mapping
