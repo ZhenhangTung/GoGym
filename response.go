@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	StatusMethodNotAllowed = 405
-	StatusOK               = 200
-	StatusNotFound         = 404
+	HTTPStatusMethodNotAllowed = 405
+	HTTPStatusOK               = 200
+	HTTPStatusNotFound         = 404
 )
 
 const (
@@ -73,7 +73,7 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 // wait is a method does preparation for sending response
 func (r *Response) wait(rw http.ResponseWriter) {
 	r.rw = rw
-	r.statusCode = HTTPOk
+	r.statusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
