@@ -6,8 +6,10 @@
 
 [![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
 
+[中文文档](./README_zh.md)
 
-```GoGym ``` is a micro-framework for building RESTful APIs, which is written in ```Golang```. It is inspired by an artisan framework [Laravel](https://laravel.com/).
+
+```GoGym ``` is a framework for building RESTful APIs, which is written in ```Golang```. It is inspired by an artisan framework [Laravel](https://laravel.com/).
 
 ![](http://tongzhenhang.me/wp-content/uploads/2017/03/GoGym_Logo_256.png)   
 Icon made by @Beth Wardolf
@@ -69,8 +71,8 @@ gym.OpenAt(3000)
 * ```Post(path, controllerWithActionString string)``` : Post is a fucntion handles POST requests
 * ```Put(path, controllerWithActionString string)``` : Put is a method handles PUT requests
 * ```Patch(path, controllerWithActionString string)``` : Patch is a method handles PATCH requests
-* ```Options(path, controllerWithActionString string)``` : Options is a method handles Options requests
-* ```Delete(path, controllerWithActionString string)``` : Delete is a method handles Delete requests
+* ```Options(path, controllerWithActionString string)``` : Options is a method handles OPTIONS requests
+* ```Delete(path, controllerWithActionString string)``` : Delete is a method handles DELETE requests
 * ```RegisterController``` : RegisterControllers is a method registers a controller into controllerRegistry
 * ```RegisterControllers``` : RegisterControllers is a method registers a struct of controllers into controllerRegistry
 
@@ -113,6 +115,8 @@ type HelloController struct {
 }
 
 func (h *HelloController) SayHello(api *GoGym.Gym) {
+	method := api.Request.Method
+	fmt.Println(method)
 	api.Response.JsonResponse(map[string]string{"hello": "world"}, 200, http.Header{})
 }
 
