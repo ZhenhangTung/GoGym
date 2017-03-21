@@ -21,6 +21,39 @@ Icon made by @Beth Wardolf
 
 ## How to use ```GoGym```
 
+### 1. Define your Own Controllers And Actions
+
+```
+type HelloController struct {
+}
+
+func (h *HelloController) SayHello(api *GoGym.Gym) {
+    // Your logic goes there
+}
+```
+
+### 2. Do preparations for your Gym's opening
+```
+var gym = new(GoGym.Gym)
+gym.Prepare()
+```
+### 3. Register your controller, and make it as a part of your Gym family
+```
+gym.Router.RegisterController(&HelloController{})
+```
+
+### 4. Be ready for getting requests. Let's smile and say hello. :)
+```
+gym.Router.Get("/", "HelloController@SayHello")
+```
+
+### 5. Now your Gym are opening. Let's cheer!
+```
+gym.OpenAt(3000)
+```
+
+## Core Services
+
 ### ```Gym```
 ```Gym``` is a service container :   
 
@@ -124,9 +157,19 @@ func main() {
 ```
 
 
-## Notice
-```GoGym``` now is still in development which means that it is still <b>unstable</b>, and it has changed a lot since the time when it was open source. I believe these changes are impressive and brings more flexibility to ```GoGym```.  ```v0.1``` is on schedule and would be comming soon.   
-Thanks for everyone who support this project.
+## Contribution
+
+Your contribution to ```GoGym``` development is very welcome!
+You may contribute in the following ways:
+
+* [Post issues and feedbacks](https://github.com/ZhenhangTung/GoGym/issues)
+* Submit fixes, features via Pull Request
+* Write/polish documentation
+
+
+## Contributors
+[https://github.com/ZhenhangTung/GoGym/graphs/contributors](https://github.com/ZhenhangTung/GoGym/graphs/contributors)
+
 
 
 ## License
