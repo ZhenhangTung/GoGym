@@ -9,13 +9,9 @@ import (
 )
 
 const (
-	HTTPMethodNotAllowed = http.StatusMethodNotAllowed
-	HTTPOk               = http.StatusOK
-	HTTPNotFound         = http.StatusNotFound
-	HTTPUnauthorized     = http.StatusUnauthorized
-	HTTPTooManyRequests  = http.StatusTooManyRequests
-	HTTPBadGateway       = http.StatusBadGateway
-	HTTPBadRequest       = http.StatusBadRequest
+	StatusMethodNotAllowed = 405
+	StatusOK               = 200
+	StatusNotFound         = 404
 )
 
 const (
