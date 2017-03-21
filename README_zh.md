@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
 
-```GoGym```是一个用Golang构建的RESTful APIs的框架。它深受[Laravel](https://laravel.com/)启发，帮助用户优雅快速地构建API服务。
+```GoGym```是一个用Golang构建的RESTful APIs的框架。它深受[Laravel](https://laravel.com/)启发，希望能帮助用户优雅快速地构建API服务。
 
 ![](http://tongzhenhang.me/wp-content/uploads/2017/03/GoGym_Logo_256.png)   
 项目Icon由 @Beth Wardolf 设计制作
