@@ -100,7 +100,7 @@ func (r *Router) HandleRequest(controllers map[string]map[string]string) http.Ha
 		r.CallYourBoss().Response.wait(rw)
 		macthedControllers, ok := controllers[r.CallYourBoss().Request.Method]
 		if !ok {
-			rw.WriteHeader(HTTPMethodNotAllowed)
+			rw.WriteHeader(HTTPStatusMethodNotAllowed)
 		}
 		for k, v := range macthedControllers {
 			controllerKey := "*" + k

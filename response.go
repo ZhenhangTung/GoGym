@@ -3,17 +3,27 @@ package GoGym
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	"net/http"
 	"reflect"
 )
 
 const (
-	HTTPMethodNotAllowed = 405
-	HTTPOk               = 200
+	HTTPStatusMethodNotAllowed = 405
+	HTTPStatusOK               = 200
+	HTTPStatusNotFound         = 404
 )
 
 const (
 	ServiceResponse = "Response"
+)
+
+//MIME Types
+const (
+	MIME_APP_JSON             = "application/json"
+	MIME_APP_JSON_CHARSETUTF8 = MIME_APP_JSON + ";" + "charset=UTF-8"
+	MIME_APP_FORM             = "application/x-www-form-urlencoded"
+	MIME_APP_PB               = "application/protobuf"
 )
 
 // Response service
@@ -52,9 +62,9 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 	var respHeader http.Header
 	if header != nil {
 		respHeader = header
-		respHeader.Add("Content-Type", "application/json")
+		respHeader.Add("Content-Type", MIME_APP_JSON)
 	} else {
-		respHeader.Add("Content-Type", "application/json")
+		respHeader.Add("Content-Type", MIME_APP_JSON)
 	}
 
 	r.header = respHeader
@@ -63,7 +73,7 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 // wait is a method does preparation for sending response
 func (r *Response) wait(rw http.ResponseWriter) {
 	r.rw = rw
-	r.statusCode = HTTPOk
+	r.statusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
@@ -77,7 +87,7 @@ func (r *Response) send() {
 	rsp, err := json.Marshal(r.respone)
 	if err != nil {
 		// TODO: logging error
-		fmt.Println("JSON err:", err)
+		glog.Error(fmt.Sprintf("JSON err: %s", err))
 	}
 	r.rw.Write(rsp)
 }
