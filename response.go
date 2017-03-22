@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	HTTPStatusMethodNotAllowed = 405
-	HTTPStatusOK               = 200
-	HTTPStatusNotFound         = 404
+	HTTPStatusMethodNotAllowed    = 405
+	HTTPStatusOK                  = 200
+	HTTPStatusNotFound            = 404
+	HTTPStatusInternalServerError = 500
 )
 
 const (
@@ -83,11 +84,14 @@ func (r *Response) send() {
 			r.rw.Header().Add(k, h)
 		}
 	}
-	r.rw.WriteHeader(r.statusCode)
+	// r.rw.WriteHeader(r.statusCode)
 	rsp, err := json.Marshal(r.respone)
 	if err != nil {
 		// TODO: logging error
 		glog.Error(fmt.Sprintf("JSON err: %s", err))
+		r.statusCode = HTTPStatusInternalServerError
+		rsp, _ = json.Marshal(map[string]string{"error": "foo"})
 	}
+	r.rw.WriteHeader(r.statusCode)
 	r.rw.Write(rsp)
 }

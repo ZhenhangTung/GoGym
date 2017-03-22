@@ -2,7 +2,9 @@ package GoGym
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 )
@@ -19,6 +21,11 @@ type Router struct {
 	controllerRegistry map[string]interface{}
 	//registeredPathAndController is a mapping of paths and controllers
 	registeredPathAndController map[string]map[string]map[string]string
+
+	// v0.2
+	methodVerbs          []string
+	routeCollection      []*Route
+	controllerCollection map[string]interface{} //Currently, controller struct is not needed
 }
 
 // Prepare is a method prepares the router service
@@ -26,6 +33,7 @@ func (r *Router) Prepare(g *Gym) {
 	r.WhoIsYourBoss(g)
 	r.controllerRegistry = make(map[string]interface{})
 	r.registeredPathAndController = make(map[string]map[string]map[string]string)
+	r.methodVerbs = []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}
 }
 
 // WhoIsYourBoss is a method sets the service container into the Router
@@ -43,9 +51,12 @@ func (r *Router) CallMethod(method string, param []interface{}) []reflect.Value 
 }
 
 // Get is a fucntion handles GET requests
-func (r *Router) Get(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(GETMethod, path, controllerWithActionString)
+func (r *Router) Get(path, action string) {
+	mapping := r.mappingRequestMethodWithControllerAndActions(GETMethod, path, action)
 	r.registeredPathAndController[path] = mapping
+
+	// v0.2
+	r.addRoute([]string{GETMethod}, path, action)
 }
 
 // Post is a fucntion handles POST requests
@@ -96,6 +107,9 @@ func (r *Router) mappingRequestMethodWithControllerAndActions(requestMethod, pat
 // HandleRequest is a method to handle http request
 func (r *Router) HandleRequest(controllers map[string]map[string]string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
+		// v0.2
+		r.findRoute(request.URL)
+
 		r.CallYourBoss().Request.accept(request)
 		r.CallYourBoss().Response.wait(rw)
 		macthedControllers, ok := controllers[r.CallYourBoss().Request.Method]
@@ -135,4 +149,40 @@ func (r *Router) RegisterControllers(controllers []interface{}) {
 func (r *Router) RegisterController(controller interface{}) {
 	controllerType := GetType(controller)
 	r.controllerRegistry[controllerType] = controller
+}
+
+// add route to route collection
+func (r *Router) addRoute(verbs []string, uri string, action interface{}) {
+	// check if there is a "@" in action
+	legal := r.isActionLegal(action)
+	if !legal {
+		glog.Error(fmt.Sprintf("Action %s is illegal", action))
+		return
+	}
+	route := new(Route)
+	route.methods = verbs
+	route.uri = uri
+	route.action = action
+	r.routeCollection = append(r.routeCollection, route)
+}
+
+// findRoute routes
+func (r *Router) findRoute(url *url.URL) {
+	for _, v := range r.routeCollection {
+		r.check(url, v)
+	}
+}
+
+// check if there is a matched route
+func (r *Router) check(url *url.URL, route *Route) {
+
+}
+
+func (r *Router) isActionLegal(action interface{}) bool {
+	result := false
+	if GetType(action) == "string" {
+		actionString := action.(string)
+		result = strings.Contains(actionString, "@")
+	}
+	return result
 }
