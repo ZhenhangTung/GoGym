@@ -8,6 +8,7 @@ import (
 
 // Gym is a service container
 type Gym struct {
+	Mux      *Mux
 	Router   *Router
 	Request  *Request
 	Response *Response
@@ -66,6 +67,8 @@ func (g *Gym) CallService(method string, param []interface{}) []reflect.Value {
 // Prepare is a method prepares the service container
 func (g *Gym) Prepare() *Gym {
 	g.services = make(map[string]GymService)
+	g.Mux = new(Mux)
+	g.Mux.Prepare(g)
 	g.Router = new(Router)
 	g.Router.Prepare(g)
 	g.Request = new(Request)
@@ -77,7 +80,7 @@ func (g *Gym) Prepare() *Gym {
 
 // OpenAt is a method which is used to serve the service
 func (g *Gym) OpenAt(port int) {
-	g.Router.RegisterHandleFunc()
+	// g.Router.RegisterHandleFunc()
 	fullPort := fmt.Sprintf(":%d", port)
-	http.ListenAndServe(fullPort, nil)
+	http.ListenAndServe(fullPort, g.Mux.GetMux())
 }

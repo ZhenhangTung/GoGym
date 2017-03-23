@@ -1,23 +1,30 @@
 package GoGym
 
 import (
-	"regexp"
+	"fmt"
+	"net/url"
+	// "regexp"
 )
 
 type Route struct {
 	uri      string
 	methods  []string
 	action   interface{}
-	compiled [string]interface{}
+	compiled Compiled
 }
 
-func (r *Route) urlMatches(url *url.URL, route *Route) {
-	expression := r.getCompiled("regexp")
-	regexp.Match(expression, url)
+func (r *Route) urlMatches(u *url.URL, route *Route) {
+	expression := r.getCompiledRegPattern()
+	fmt.Println(u)
+	fmt.Println(expression)
+	// regexp.MatchString(expression, )
 
 }
 
-func (r *Route) getCompiled(key string) (interface{}, bool) {
-	v, ok := r.compiled[key]
-	return v, ok
+func (r *Route) getCompiledRegPattern() string {
+	return r.compiled.pattern
+}
+
+type Compiled struct {
+	pattern string
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"net/http"
-	"net/url"
+	// "net/url"
 	"reflect"
 	"strings"
 )
@@ -24,7 +24,7 @@ type Router struct {
 
 	// v0.2
 	methodVerbs          []string
-	routeCollection      []*Route
+	routeCollection      []Route
 	controllerCollection map[string]interface{} //Currently, controller struct is not needed
 }
 
@@ -108,7 +108,10 @@ func (r *Router) mappingRequestMethodWithControllerAndActions(requestMethod, pat
 func (r *Router) HandleRequest(controllers map[string]map[string]string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 		// v0.2
-		r.findRoute(request.URL)
+		fmt.Println("v02")
+		// fmt.Println("url", request.RequestURI)
+		r.findRoute(request.RequestURI)
+		fmt.Println("endv02")
 
 		r.CallYourBoss().Request.accept(request)
 		r.CallYourBoss().Response.wait(rw)
@@ -134,7 +137,8 @@ func (r *Router) RegisterHandleFunc() {
 		if !strings.HasPrefix(k, "/") {
 			path = fmt.Sprintf("/%v", k)
 		}
-		http.HandleFunc(path, r.HandleRequest(v))
+		// r.CallYourBoss().Mux.GetMux()
+		r.CallYourBoss().Mux.HandleFunc(path, r.HandleRequest(v))
 	}
 }
 
@@ -159,7 +163,7 @@ func (r *Router) addRoute(verbs []string, uri string, action interface{}) {
 		glog.Error(fmt.Sprintf("Action %s is illegal", action))
 		return
 	}
-	route := new(Route)
+	route := Route{}
 	route.methods = verbs
 	route.uri = uri
 	route.action = action
@@ -167,15 +171,20 @@ func (r *Router) addRoute(verbs []string, uri string, action interface{}) {
 }
 
 // findRoute routes
-func (r *Router) findRoute(url *url.URL) {
+func (r *Router) findRoute(uri string) {
 	for _, v := range r.routeCollection {
-		r.check(url, v)
+		r.check(uri, v)
 	}
 }
 
 // check if there is a matched route
-func (r *Router) check(url *url.URL, route *Route) {
+func (r *Router) check(uri string, route Route) {
+	// fmt.Println(route.uri)
+	// fmt.Println()
+	if uri == "/3" {
+		fmt.Println("url match")
 
+	}
 }
 
 func (r *Router) isActionLegal(action interface{}) bool {
