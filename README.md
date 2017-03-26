@@ -1,7 +1,7 @@
 
 
 
-# GoGym  
+# GoGym
 
 
 [![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
@@ -11,11 +11,11 @@
 
 ```GoGym ``` is a framework for building RESTful APIs, which is written in ```Golang```. It is inspired by an artisan framework [Laravel](https://laravel.com/).
 
-![](http://tongzhenhang.me/wp-content/uploads/2017/03/GoGym_Logo_256.png)   
+![](http://tongzhenhang.me/wp-content/uploads/2017/03/GoGym_Logo_256.png)
 Icon made by @Beth Wardolf
 
 ## Import Package
-* Install the package from the command line: 
+* Install the package from the command line:
 
 	```bash
 	$ go get github.com/ZhenhangTung/GoGym
@@ -57,7 +57,7 @@ gym.OpenAt(3000)
 ## Core Services
 
 ### ```Gym```
-```Gym``` is a service container :   
+```Gym``` is a service container :
 
 * ```RegisterService(name string, service GymService)``` : RegisterService registers user's own service into service container
 * ```RegisterServices(services map[string]GymService)``` : RegisterServices is a function registers mutiple services
@@ -76,7 +76,7 @@ gym.OpenAt(3000)
 * ```RegisterController``` : RegisterControllers is a method registers a controller into controllerRegistry
 * ```RegisterControllers``` : RegisterControllers is a method registers a struct of controllers into controllerRegistry
 
-### ```Request``` 
+### ```Request```
 * ```Request.Method```: It gets the method of the http request
 * ```Request.Header```: It gets the header of the http request
 * ```Request.Query``` : It parses query of the http request
@@ -163,7 +163,7 @@ func main() {
 
 ## Contribution
 
-Your contribution to ```GoGym``` development is very welcome!
+Your contribution to ```GoGym``` development is very welcomed!
 You may contribute in the following ways:
 
 * [Post issues and feedbacks](https://github.com/ZhenhangTung/GoGym/issues)
