@@ -8,7 +8,6 @@ import (
 
 // Gym is a service container
 type Gym struct {
-	Mux      *Mux
 	Router   *Router
 	Request  *Request
 	Response *Response
@@ -20,18 +19,18 @@ type Gym struct {
 // It would be better to call RegisterService instead of calling bindService,
 // that's why it is a private method
 func (g *Gym) RegisterService(name string, service GymService) {
-	g.bindService(name, service)
+	g.BindService(name, service)
 }
 
 // RegisterServices is a method registers mutiple services
 func (g *Gym) RegisterServices(services map[string]GymService) {
 	for name, service := range services {
-		g.bindService(name, service)
+		g.BindService(name, service)
 	}
 }
 
 // bindService is a method binding a service with its name
-func (g *Gym) bindService(name string, service GymService) {
+func (g *Gym) BindService(name string, service GymService) {
 	g.services[name] = service
 }
 
@@ -67,8 +66,6 @@ func (g *Gym) CallService(method string, param []interface{}) []reflect.Value {
 // Prepare is a method prepares the service container
 func (g *Gym) Prepare() *Gym {
 	g.services = make(map[string]GymService)
-	g.Mux = new(Mux)
-	g.Mux.Prepare(g)
 	g.Router = new(Router)
 	g.Router.Prepare(g)
 	g.Request = new(Request)
@@ -80,7 +77,6 @@ func (g *Gym) Prepare() *Gym {
 
 // OpenAt is a method which is used to serve the service
 func (g *Gym) OpenAt(port int) {
-	// g.Router.RegisterHandleFunc()
 	fullPort := fmt.Sprintf(":%d", port)
-	http.ListenAndServe(fullPort, g.Mux.GetMux())
+	http.ListenAndServe(fullPort, g.Router)
 }

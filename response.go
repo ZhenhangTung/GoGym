@@ -29,7 +29,7 @@ const (
 
 // Response service
 type Response struct {
-	boss *Gym // Service Container
+	App *Gym // Service Container
 
 	rw         http.ResponseWriter
 	statusCode int
@@ -39,17 +39,17 @@ type Response struct {
 
 // Prepare is a method prepares the Response service
 func (r *Response) Prepare(g *Gym) {
-	r.WhoIsYourBoss(g)
+	r.InjectServiceContainer(g)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Response
-func (r *Response) WhoIsYourBoss(g *Gym) {
-	r.boss = g
+func (r *Response) InjectServiceContainer(g *Gym) {
+	r.App = g
 }
 
 // CallYourBoss is a method gets the service container
-func (r *Response) CallYourBoss() *Gym {
-	return r.boss
+func (r *Response) GetServiceContainer() *Gym {
+	return r.App
 }
 
 func (r *Response) CallMethod(method string, param []interface{}) []reflect.Value {

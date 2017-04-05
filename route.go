@@ -15,7 +15,7 @@ const (
 type Route struct {
 	Uri      string
 	Methods  []string
-	Action   interface{}
+	Action   string
 	Compiled Compiled
 }
 

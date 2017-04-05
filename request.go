@@ -21,7 +21,7 @@ const (
 
 // Request service
 type Request struct {
-	boss *Gym // Service Container
+	App *Gym // Service Container
 
 	Method string
 	Header http.Header
@@ -31,17 +31,17 @@ type Request struct {
 
 // Prepare is a method prepares the Request service
 func (r *Request) Prepare(g *Gym) {
-	r.WhoIsYourBoss(g)
+	r.InjectServiceContainer(g)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Request
-func (r *Request) WhoIsYourBoss(g *Gym) {
-	r.boss = g
+func (r *Request) InjectServiceContainer(g *Gym) {
+	r.App = g
 }
 
 // CallYourBoss is a method gets the service container
-func (r *Request) CallYourBoss() *Gym {
-	return r.boss
+func (r *Request) GetServiceContainer() *Gym {
+	return r.App
 }
 
 func (r *Request) CallService(method string, param []interface{}) []reflect.Value {
