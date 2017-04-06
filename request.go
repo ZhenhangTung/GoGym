@@ -23,15 +23,17 @@ const (
 type Request struct {
 	App *Gym // Service Container
 
-	Method string
-	Header http.Header
-	Query  url.Values
-	Form   url.Values
+	Method  string
+	Header  http.Header
+	Query   url.Values
+	Form    url.Values
+	PathVar map[string]string
 }
 
 // Prepare is a method prepares the Request service
 func (r *Request) Prepare(g *Gym) {
 	r.InjectServiceContainer(g)
+	r.PathVar = make(map[string]string)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Request
@@ -55,4 +57,12 @@ func (r *Request) accept(request *http.Request) {
 	r.Query = request.Form
 	r.Form = request.PostForm
 	r.Header = request.Header
+}
+
+func (r *Request) BindPathVar(pathVar []Token) {
+	for _, v := range pathVar {
+		if v.IsParam {
+			r.PathVar[v.Name] = v.Value
+		}
+	}
 }

@@ -29,11 +29,10 @@ const (
 
 // Response service
 type Response struct {
-	App *Gym // Service Container
-
+	App        *Gym // Service Container
 	Rw         http.ResponseWriter
 	StatusCode int
-	Response    interface{}
+	Response   interface{}
 	Header     http.Header
 }
 

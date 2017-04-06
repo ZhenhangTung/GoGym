@@ -36,14 +36,14 @@ func (r *Route) ExtractTokens(uri string) {
 	expr := fmt.Sprintf("%s{(%sw+)%s}", EscapedCharacter, EscapedCharacter, EscapedCharacter)
 	re, _ := regexp.Compile(expr)
 	matches := re.FindAllStringSubmatch(uri, -1)
-	var splitedStr []string
+	var splitStr []string
 	if uri[0:1] == Delimiter {
-		splitedStr = strings.Split(uri[1:], Delimiter)
+		splitStr = strings.Split(uri[1:], Delimiter)
 	} else {
-		splitedStr = strings.Split(uri, Delimiter)
+		splitStr = strings.Split(uri, Delimiter)
 	}
 	tick := 0
-	for _, str := range splitedStr {
+	for _, str := range splitStr {
 		t := Token{}
 		// If the length of matches equals 0, it means that there is
 		// no variable left

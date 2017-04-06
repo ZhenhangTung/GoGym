@@ -121,12 +121,14 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 				}
 			}
 		}
-
 		if !methodMatch {
 			rsp := make(map[string]interface{})
 			rsp["err"] = "Method not allowed"
 			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
 		} else {
+			// Binding path variables
+			r.GetServiceContainer().Request.BindPathVar(handlingRoute.Compiled.Tokens)
+			// Handling request
 			r.Handle(handlingRoute, rw, request)
 		}
 	}
@@ -139,6 +141,7 @@ func (r *Router) FindRoute(uri string) []Route {
 	matched := false
 	for _, route := range r.RouteCollection {
 		if route.Match(uri) {
+			route.AssignValuesToTokens(uri)
 			matchedCollection = append(matchedCollection, route)
 			matched = true
 		}
