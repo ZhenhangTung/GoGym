@@ -1,7 +1,6 @@
 package GoGym
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"reflect"
@@ -105,29 +104,30 @@ func (r *Router) Delete(path, action string) {
 }
 
 func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
-	fmt.Print("hello world")
+	r.GetServiceContainer().Request.accept(request)
+	r.GetServiceContainer().Response.wait(rw)
 	route := r.FindRoute(request.RequestURI)
 	if route.Action == "" {
-		// 404
-		fmt.Println("404")
-		//rsp := map(string){"err": "not found"}
 		rsp := make(map[string]interface{})
+		rsp["err"] = "Not found"
 		r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
-		r.GetServiceContainer().Response.send()
 
-	}
-	methodMatch := false
-	for _, m := range route.Methods {
-		if m == request.Method {
-			methodMatch = true
+	} else {
+		methodMatch := false
+		for _, m := range route.Methods {
+			if m == request.Method {
+				methodMatch = true
+			}
+		}
+		if !methodMatch {
+			rsp := make(map[string]interface{})
+			rsp["err"] = "Method not allowed"
+			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
+		} else {
+			r.Handle(route, rw, request)
 		}
 	}
-	if !methodMatch {
-		// 405
-		fmt.Println("405")
-		return
-	}
-	r.Handle(route, rw, request)
+	r.GetServiceContainer().Response.send()
 
 }
 

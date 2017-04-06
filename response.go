@@ -31,10 +31,10 @@ const (
 type Response struct {
 	App *Gym // Service Container
 
-	rw         http.ResponseWriter
-	statusCode int
-	respone    interface{}
-	header     http.Header
+	Rw         http.ResponseWriter
+	StatusCode int
+	Response    interface{}
+	Header     http.Header
 }
 
 // Prepare is a method prepares the Response service
@@ -58,8 +58,8 @@ func (r *Response) CallMethod(method string, param []interface{}) []reflect.Valu
 
 // JsonResponse is a method prepares the JSON response
 func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) {
-	r.respone = resp
-	r.statusCode = statusCode
+	r.Response = resp
+	r.StatusCode = statusCode
 	var respHeader http.Header
 	if header != nil {
 		respHeader = header
@@ -68,30 +68,30 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 		respHeader.Add("Content-Type", MIME_APP_JSON)
 	}
 
-	r.header = respHeader
+	r.Header = respHeader
 }
 
 // wait is a method does preparation for sending response
 func (r *Response) wait(rw http.ResponseWriter) {
-	r.rw = rw
-	r.statusCode = HTTPStatusOK
+	r.Rw = rw
+	r.StatusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
 func (r *Response) send() {
-	for k, v := range r.header {
+	for k, v := range r.Header {
 		for _, h := range v {
-			r.rw.Header().Add(k, h)
+			r.Rw.Header().Add(k, h)
 		}
 	}
 	// r.rw.WriteHeader(r.statusCode)
-	rsp, err := json.Marshal(r.respone)
+	rsp, err := json.Marshal(r.Response)
 	if err != nil {
 		// TODO: logging error
 		glog.Error(fmt.Sprintf("JSON err: %s", err))
-		r.statusCode = HTTPStatusInternalServerError
+		r.StatusCode = HTTPStatusInternalServerError
 		rsp, _ = json.Marshal(map[string]string{"error": "foo"})
 	}
-	r.rw.WriteHeader(r.statusCode)
-	r.rw.Write(rsp)
+	r.Rw.WriteHeader(r.StatusCode)
+	r.Rw.Write(rsp)
 }
