@@ -13,15 +13,12 @@ const (
 
 // Router service
 type Router struct {
-	App *Gym // Service Container
-
-	// controllerRegistry is where all registered controllers exist
+	// App is the Service Container
+	App *Gym
+	// ControllerRegistry is where all registered controllers exist
 	ControllerRegistry map[string]interface{}
-
-	// v0.2
-	MethodVerbs     []string
-	RouteCollection []Route
-	//ControllerCollection map[string]interface{}
+	MethodVerbs        []string
+	RouteCollection    []Route
 }
 
 // Prepare is a method prepares the router service
@@ -31,12 +28,12 @@ func (r *Router) Prepare(g *Gym) {
 	r.MethodVerbs = []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}
 }
 
-// WhoIsYourBoss is a method sets the service container into the Router
+// InjectServiceContainer is a method sets the service container into the Router
 func (r *Router) InjectServiceContainer(g *Gym) {
 	r.App = g
 }
 
-// CallYourBoss is a method gets the service container
+// GetServiceContainer is a method gets the service container
 func (r *Router) GetServiceContainer() *Gym {
 	return r.App
 }
@@ -106,39 +103,50 @@ func (r *Router) Delete(path, action string) {
 func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 	r.GetServiceContainer().Request.accept(request)
 	r.GetServiceContainer().Response.wait(rw)
-	route := r.FindRoute(request.RequestURI)
-	if route.Action == "" {
+	//fmt.Println("req", request.URL.Path)
+	routes := r.FindRoute(request.URL.Path)
+	if routes == nil {
 		rsp := make(map[string]interface{})
 		rsp["err"] = "Not found"
 		r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
 
 	} else {
 		methodMatch := false
-		for _, m := range route.Methods {
-			if m == request.Method {
-				methodMatch = true
+		var handlingRoute Route
+		for k, route := range routes {
+			for _, mth := range route.Methods {
+				if mth == request.Method {
+					methodMatch = true
+					handlingRoute = routes[k]
+				}
 			}
 		}
+
 		if !methodMatch {
 			rsp := make(map[string]interface{})
 			rsp["err"] = "Method not allowed"
 			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
 		} else {
-			r.Handle(route, rw, request)
+			r.Handle(handlingRoute, rw, request)
 		}
 	}
 	r.GetServiceContainer().Response.send()
 
 }
 
-func (r *Router) FindRoute(uri string) Route {
+func (r *Router) FindRoute(uri string) []Route {
+	var matchedCollection []Route
+	matched := false
 	for _, route := range r.RouteCollection {
-		//r.check(uri, v)
 		if route.Match(uri) {
-			return route
+			matchedCollection = append(matchedCollection, route)
+			matched = true
 		}
 	}
-	return Route{}
+	if matched {
+		return matchedCollection
+	}
+	return nil
 }
 
 func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Request) {
@@ -149,7 +157,6 @@ func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Reque
 	in := make([]reflect.Value, 1)
 	in[0] = reflect.ValueOf(r.GetServiceContainer())
 	reflect.ValueOf(controller).MethodByName(method).Call(in)
-	//r.GetServiceContainer().Response.send()
 }
 
 func (r *Router) RegisterController(controller interface{}) {

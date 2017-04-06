@@ -56,7 +56,3 @@ func (r *Request) accept(request *http.Request) {
 	r.Form = request.PostForm
 	r.Header = request.Header
 }
-
-func (r *Request) parseUrl(url *url.URL) {
-
-}
