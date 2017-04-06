@@ -39,9 +39,10 @@ func (r *Router) GetServiceContainer() *Gym {
 }
 
 func (r *Router) CallMethod(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 }
 
+// NewRoute is a method that creates a new route to RouteCollection
 func (r *Router) NewRoute(uri string, methods []string, action string) {
 	if !r.IsActionLegal(action) {
 		log.Fatalf("Action %s is illegal", action)
@@ -56,6 +57,7 @@ func (r *Router) NewRoute(uri string, methods []string, action string) {
 	r.RouteCollection = append(r.RouteCollection, route)
 }
 
+// IsActionLegal checks if an action is legal
 func (r *Router) IsActionLegal(action string) bool {
 	result := false
 	if strings.Contains(action, "@") {
@@ -100,10 +102,10 @@ func (r *Router) Delete(path, action string) {
 	r.NewRoute(path, methods, action)
 }
 
+// ServeHTTP is a method serve http service
 func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
-	r.GetServiceContainer().Request.accept(request)
-	r.GetServiceContainer().Response.wait(rw)
-	//fmt.Println("req", request.URL.Path)
+	r.GetServiceContainer().Request.Accept(request)
+	r.GetServiceContainer().Response.Wait(rw)
 	routes := r.FindRoute(request.URL.Path)
 	if routes == nil {
 		rsp := make(map[string]interface{})
@@ -132,10 +134,10 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 			r.Handle(handlingRoute, rw, request)
 		}
 	}
-	r.GetServiceContainer().Response.send()
-
+	r.GetServiceContainer().Response.Send()
 }
 
+// FindRoute is a method finding a group of Route whose Uri is matched wit request Uri
 func (r *Router) FindRoute(uri string) []Route {
 	var matchedCollection []Route
 	matched := false
@@ -152,6 +154,7 @@ func (r *Router) FindRoute(uri string) []Route {
 	return nil
 }
 
+// Handle is a method for using route passed in to handle the request
 func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Request) {
 	actionSlice := strings.Split(route.Action, "@")
 	method := actionSlice[1]
@@ -162,6 +165,7 @@ func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Reque
 	reflect.ValueOf(controller).MethodByName(method).Call(in)
 }
 
+// RegisterController is a method registers controller
 func (r *Router) RegisterController(controller interface{}) {
 	controllerType := GetType(controller)
 	r.ControllerRegistry[controllerType] = controller

@@ -13,7 +13,7 @@ func GetType(value interface{}) string {
 	}
 }
 
-// CallServiceMethodWithReflect is a functon calls user's own service method
+// CallServiceMethodWithReflect is a method calls user's own service method
 func CallServiceMethodWithReflect(g GymService, method string, param []interface{}) []reflect.Value {
 	length := len(param)
 	var in []reflect.Value

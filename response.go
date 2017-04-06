@@ -71,13 +71,13 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 }
 
 // wait is a method does preparation for sending response
-func (r *Response) wait(rw http.ResponseWriter) {
+func (r *Response) Wait(rw http.ResponseWriter) {
 	r.Rw = rw
 	r.StatusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
-func (r *Response) send() {
+func (r *Response) Send() {
 	for k, v := range r.Header {
 		for _, h := range v {
 			r.Rw.Header().Add(k, h)

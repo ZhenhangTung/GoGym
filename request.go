@@ -51,7 +51,7 @@ func (r *Request) CallService(method string, param []interface{}) []reflect.Valu
 }
 
 // accept is a method gets the http request and parse it
-func (r *Request) accept(request *http.Request) {
+func (r *Request) Accept(request *http.Request) {
 	request.ParseForm()
 	r.Method = request.Method
 	r.Query = request.Form
