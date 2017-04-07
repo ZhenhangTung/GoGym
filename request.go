@@ -69,10 +69,12 @@ func (r *Request) bindPathVar(tokens []Token) {
 	}
 }
 
+// PathVar stores all variables of defined path
 type PathVar struct {
 	variables map[string]string
 }
 
+// Get is a PathVar getter
 func (p *PathVar) Get(varName string) string {
 	value, isSet := p.variables[varName]
 	if !isSet {
@@ -81,10 +83,12 @@ func (p *PathVar) Get(varName string) string {
 	return value
 }
 
+// Set is a PathVar setter
 func (p *PathVar) Set(varName, value string) {
 	p.variables[varName] = value
 }
 
+// All is a method for getting all path variables
 func (p *PathVar) All() map[string]string {
 	return p.variables
 }
