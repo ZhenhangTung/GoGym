@@ -46,7 +46,7 @@ func (r *Request) GetServiceContainer() *Gym {
 	return r.App
 }
 
-func (r *Request) CallService(method string, param []interface{}) []reflect.Value {
+func (r *Request) CallMethod(method string, param []interface{}) []reflect.Value {
 	return nil
 }
 

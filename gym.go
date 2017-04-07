@@ -19,22 +19,22 @@ type Gym struct {
 // It would be better to call RegisterService instead of calling bindService,
 // that's why it is a private method
 func (g *Gym) RegisterService(name string, service GymService) {
-	g.BindService(name, service)
+	g.bindService(name, service)
 }
 
-// RegisterServices is a method registers mutiple services
+// RegisterServices is a method registers multiple services
 func (g *Gym) RegisterServices(services map[string]GymService) {
 	for name, service := range services {
-		g.BindService(name, service)
+		g.bindService(name, service)
 	}
 }
 
 // bindService is a method binding a service with its name
-func (g *Gym) BindService(name string, service GymService) {
+func (g *Gym) bindService(name string, service GymService) {
 	g.services[name] = service
 }
 
-// GetService is a fucntion gets a service
+// GetService is a method gets a service
 func (g *Gym) GetService(name string) GymService {
 	return g.services[name]
 }
