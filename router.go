@@ -49,11 +49,11 @@ func (r *Router) NewRoute(uri string, methods []string, action string) {
 		return
 	}
 	var route Route
-	route.Uri = uri
-	route.Methods = methods
-	route.Action = action
-	route.ExtractTokens(route.Uri)
-	route.Compile(route.Uri)
+	route.uri = uri
+	route.methods = methods
+	route.action = action
+	route.extractTokens(route.uri)
+	route.compile(route.uri)
 	r.RouteCollection = append(r.RouteCollection, route)
 }
 
@@ -116,7 +116,7 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 		methodMatch := false
 		var handlingRoute Route
 		for k, route := range routes {
-			for _, mth := range route.Methods {
+			for _, mth := range route.methods {
 				if mth == request.Method {
 					methodMatch = true
 					handlingRoute = routes[k]
@@ -129,7 +129,7 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
 		} else {
 			// Binding path variables
-			r.GetServiceContainer().Request.bindPathVar(handlingRoute.Compiled.Tokens)
+			r.GetServiceContainer().Request.bindPathVar(handlingRoute.compiled.Tokens)
 			// Handling request
 			r.Handle(handlingRoute, rw, request)
 		}
@@ -142,8 +142,8 @@ func (r *Router) FindRoute(uri string) []Route {
 	var matchedCollection []Route
 	matched := false
 	for _, route := range r.RouteCollection {
-		if route.Match(uri) {
-			route.AssignValuesToTokens(uri)
+		if route.match(uri) {
+			route.assignValuesToTokens(uri)
 			matchedCollection = append(matchedCollection, route)
 			matched = true
 		}
@@ -156,7 +156,7 @@ func (r *Router) FindRoute(uri string) []Route {
 
 // Handle is a method for using route passed in to handle the request
 func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Request) {
-	actionSlice := strings.Split(route.Action, "@")
+	actionSlice := strings.Split(route.action, "@")
 	method := actionSlice[1]
 	controllerKey := "*" + actionSlice[0]
 	controller := r.ControllerRegistry[controllerKey]

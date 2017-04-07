@@ -68,7 +68,7 @@ func TestRouter_NewRoute(t *testing.T) {
 	regexp := "\\/foo\\/(\\w+)$"
 	comp.Tokens = expTk
 	comp.RegExp = regexp
-	rt := Route{Uri: uri, Methods: methods, Action: action, Compiled: comp}
+	rt := Route{uri: uri, methods: methods, action: action, compiled: comp}
 	var expected []Route
 	expected = append(expected, rt)
 	if !reflect.DeepEqual(expected, router.RouteCollection) {
@@ -180,27 +180,27 @@ func TestRouter_FindRoute(t *testing.T) {
 	router.NewRoute("/foo/{bar}", []string{POSTMethod}, "IndexController@Post")
 	router.NewRoute("/foo/bar/baz", []string{DELETEMethod}, "IndexController@Delete")
 	var route Route
-	route.Uri = "/foo/{bar}"
-	route.Methods = []string{GETMethod}
-	route.Action = "IndexController@Get"
-	route.ExtractTokens(route.Uri)
-	route.Compile(route.Uri)
-	for k, tk := range route.Compiled.Tokens {
+	route.uri = "/foo/{bar}"
+	route.methods = []string{GETMethod}
+	route.action = "IndexController@Get"
+	route.extractTokens(route.uri)
+	route.compile(route.uri)
+	for k, tk := range route.compiled.Tokens {
 		if tk.Name == "bar" {
-			route.Compiled.Tokens[k].Value = "yeah"
+			route.compiled.Tokens[k].Value = "yeah"
 		}
 	}
 	var route1 Route
-	route1.Uri = "/foo/{bar}"
-	route1.Methods = []string{POSTMethod}
-	route1.Action = "IndexController@Post"
-	route1.ExtractTokens(route.Uri)
-	route1.Compile(route.Uri)
+	route1.uri = "/foo/{bar}"
+	route1.methods = []string{POSTMethod}
+	route1.action = "IndexController@Post"
+	route1.extractTokens(route.uri)
+	route1.compile(route.uri)
 	var expected []Route
 	expected = append(expected, route, route1)
-	for k, tk := range route1.Compiled.Tokens {
+	for k, tk := range route1.compiled.Tokens {
 		if tk.Name == "bar" {
-			route1.Compiled.Tokens[k].Value = "yeah"
+			route1.compiled.Tokens[k].Value = "yeah"
 		}
 	}
 	if !reflect.DeepEqual(expected, router.FindRoute("/foo/yeah")) {

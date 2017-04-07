@@ -14,10 +14,10 @@ const (
 
 // Route is responsible for forwarding matched requests to related action
 type Route struct {
-	Uri      string
-	Methods  []string
-	Action   string
-	Compiled Compiled
+	uri      string
+	methods  []string
+	action   string
+	compiled Compiled
 }
 
 // Compiled is for saving Tokens and compiled regular expression
@@ -47,7 +47,7 @@ type Token struct {
 }
 
 // ExtractTokens is a method extracts uri as tokens
-func (r *Route) ExtractTokens(uri string) {
+func (r *Route) extractTokens(uri string) {
 	expr := fmt.Sprintf("%s{(%sw+)%s}", EscapedCharacter, EscapedCharacter, EscapedCharacter)
 	re, _ := regexp.Compile(expr)
 	matches := re.FindAllStringSubmatch(uri, -1)
@@ -67,7 +67,7 @@ func (r *Route) ExtractTokens(uri string) {
 			t.Name = str
 			t.Value = str
 			t.IsParam = false
-			r.Compiled.Tokens = append(r.Compiled.Tokens, t)
+			r.compiled.Tokens = append(r.compiled.Tokens, t)
 			continue
 		}
 		// Every time there is a variable match, the matched variable would
@@ -88,12 +88,12 @@ func (r *Route) ExtractTokens(uri string) {
 			}
 			//r.Compiled.Tokens = append(r.Compiled.Tokens, t)
 		}
-		r.Compiled.Tokens = append(r.Compiled.Tokens, t)
+		r.compiled.Tokens = append(r.compiled.Tokens, t)
 	}
 }
 
 // Compile is a method compiles tokens and regexp
-func (r *Route) Compile(uri string) {
+func (r *Route) compile(uri string) {
 	var uriString string
 	if uri[0:1] == Delimiter {
 		uriString = uri[1:]
@@ -103,7 +103,7 @@ func (r *Route) Compile(uri string) {
 	var expression string
 	splitString := strings.Split(uriString, Delimiter)
 	for k, str := range splitString {
-		token := r.Compiled.Tokens[k]
+		token := r.compiled.Tokens[k]
 		if !token.IsParam {
 			e := fmt.Sprintf("%s%s%s", EscapedCharacter, Delimiter, str)
 			expression += e
@@ -115,25 +115,25 @@ func (r *Route) Compile(uri string) {
 			expression += End
 		}
 	}
-	r.Compiled.RegExp = expression
+	r.compiled.RegExp = expression
 }
 
 // MatchAndAssign is a method that check if request uri matches defined uri
 // and assign values to variables
-func (r *Route) MatchAndAssign(uri string) {
-	matched := r.Match(uri)
+func (r *Route) matchAndAssign(uri string) {
+	matched := r.match(uri)
 	if matched {
-		r.AssignValuesToTokens(uri)
+		r.assignValuesToTokens(uri)
 	}
 }
 
 // Match is a method to check if request uri meets regexp
-func (r *Route) Match(uri string) bool {
+func (r *Route) match(uri string) bool {
 	var matched bool
-	regE, _ := regexp.Compile(r.Compiled.RegExp)
+	regE, _ := regexp.Compile(r.compiled.RegExp)
 	matched = regE.MatchString(uri)
 	splitString := strings.Split(uri, Delimiter)
-	splitUri := strings.Split(r.Uri, Delimiter)
+	splitUri := strings.Split(r.uri, Delimiter)
 	// If request's path node is not equal as defined Uri, these two won't match
 	if len(splitString) != len(splitUri) {
 		matched = false
@@ -142,8 +142,8 @@ func (r *Route) Match(uri string) bool {
 }
 
 // AssignValuesToTokens is a method assigning values to tokens
-func (r *Route) AssignValuesToTokens(uri string) {
-	regE, _ := regexp.Compile(r.Compiled.RegExp)
+func (r *Route) assignValuesToTokens(uri string) {
+	regE, _ := regexp.Compile(r.compiled.RegExp)
 	var stringMatches [][]string
 	stringMatches = regE.FindAllStringSubmatch(uri, -1)
 	// When the length of stringMatches[0] is greater than 1,
@@ -154,9 +154,9 @@ func (r *Route) AssignValuesToTokens(uri string) {
 	// pointer equals 1 is because the first element of stringMatches is full request path,
 	// not a variable
 	pointer := 1
-	for k, tkn := range r.Compiled.Tokens {
+	for k, tkn := range r.compiled.Tokens {
 		if tkn.IsParam {
-			r.Compiled.Tokens[k].Value = stringMatches[0][pointer]
+			r.compiled.Tokens[k].Value = stringMatches[0][pointer]
 			pointer++
 		}
 		// If pointer is greater than the length of stringMatches[0], there
