@@ -3,7 +3,7 @@ package GoGym
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"reflect"
 )
@@ -86,10 +86,9 @@ func (r *Response) Send() {
 	// r.rw.WriteHeader(r.statusCode)
 	rsp, err := json.Marshal(r.Response)
 	if err != nil {
-		// TODO: logging error
-		glog.Error(fmt.Sprintf("JSON err: %s", err))
+		log.Error(fmt.Sprintf("JSON err: %s", err))
 		r.StatusCode = HTTPStatusInternalServerError
-		rsp, _ = json.Marshal(map[string]string{"error": "foo"})
+		rsp, _ = json.Marshal(map[string]string{"error": "Error when parsing Json Response"})
 	}
 	r.Rw.WriteHeader(r.StatusCode)
 	r.Rw.Write(rsp)

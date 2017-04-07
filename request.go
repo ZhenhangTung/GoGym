@@ -47,10 +47,10 @@ func (r *Request) GetServiceContainer() *Gym {
 }
 
 func (r *Request) CallService(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 }
 
-// accept is a method gets the http request and parse it
+// Accept is a method gets the http request and parse it
 func (r *Request) Accept(request *http.Request) {
 	request.ParseForm()
 	r.Method = request.Method
@@ -59,8 +59,9 @@ func (r *Request) Accept(request *http.Request) {
 	r.Header = request.Header
 }
 
-func (r *Request) BindPathVar(pathVar []Token) {
-	for _, v := range pathVar {
+// BindPathVar is a method binding values to related variable in the uri
+func (r *Request) BindPathVar(tokens []Token) {
+	for _, v := range tokens {
 		if v.IsParam {
 			r.PathVar[v.Name] = v.Value
 		}

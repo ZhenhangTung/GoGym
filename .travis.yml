@@ -8,7 +8,6 @@ go:
   - 1.8
 
 install:
-  - go get github.com/golang/glog
   - go get github.com/Sirupsen/logrus
 
 script:

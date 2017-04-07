@@ -12,6 +12,7 @@ const (
 	End              = "$"
 )
 
+// Route is responsible for forwarding matched requests to related action
 type Route struct {
 	Uri      string
 	Methods  []string
@@ -19,11 +20,25 @@ type Route struct {
 	Compiled Compiled
 }
 
+// Compiled is for saving Tokens and compiled regular expression
+// After compiling, Uri would be compiled into Tokens and according RegExp
 type Compiled struct {
 	Tokens []Token
 	RegExp string
 }
 
+// Token has attributes, which are Var, Name, Value and IsParam
+// Var: It is a node extracted from Uri
+// Name: It is compiled from Var
+// Value: The value of this Token
+// IsParam: A mark tells if this token is a param
+// ===========================================================================
+// If a Token is a param, Value would be assigned when handling matched request
+// Example: If an uri defined by user is /foo/{bar}
+// token1 = Token{Var: foo, Name: foo, Value: foo, IsParam: false}
+// token2 = Token{Var: {bar}, Name: bar, IsParam: true}
+// If the request Uri is /foo/baz, then token2 would be:
+// token2 = Token{Var: {bar}, Name: bar, Value: baz, IsParam:true}
 type Token struct {
 	Var     string
 	Name    string
@@ -79,7 +94,6 @@ func (r *Route) ExtractTokens(uri string) {
 
 // Compile is a method compiles tokens and regexp
 func (r *Route) Compile(uri string) {
-	// 除去字符串开头的"/"，为了好做正则
 	var uriString string
 	if uri[0:1] == Delimiter {
 		uriString = uri[1:]
