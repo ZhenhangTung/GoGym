@@ -104,8 +104,8 @@ func (r *Router) Delete(path, action string) {
 
 // ServeHTTP is a method serve http service
 func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
-	r.GetServiceContainer().Request.Accept(request)
-	r.GetServiceContainer().Response.Wait(rw)
+	r.GetServiceContainer().Request.accept(request)
+	r.GetServiceContainer().Response.wait(rw)
 	routes := r.FindRoute(request.URL.Path)
 	if routes == nil {
 		rsp := make(map[string]interface{})
@@ -129,12 +129,12 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
 		} else {
 			// Binding path variables
-			r.GetServiceContainer().Request.BindPathVar(handlingRoute.Compiled.Tokens)
+			r.GetServiceContainer().Request.bindPathVar(handlingRoute.Compiled.Tokens)
 			// Handling request
 			r.Handle(handlingRoute, rw, request)
 		}
 	}
-	r.GetServiceContainer().Response.Send()
+	r.GetServiceContainer().Response.send()
 }
 
 // FindRoute is a method finding a group of Route whose Uri is matched wit request Uri

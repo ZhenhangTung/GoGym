@@ -3,7 +3,6 @@ package GoGym
 import (
 	"reflect"
 	"testing"
-	//"fmt"
 )
 
 func TestGym_Prepare(t *testing.T) {

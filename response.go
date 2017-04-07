@@ -29,10 +29,10 @@ const (
 
 // Response service
 type Response struct {
-	App        *Gym // Service Container
+	app        *Gym // Service Container
 	Rw         http.ResponseWriter
 	StatusCode int
-	Response   interface{}
+	Response   []byte
 	Header     http.Header
 }
 
@@ -43,21 +43,28 @@ func (r *Response) Prepare(g *Gym) {
 
 // WhoIsYourBoss is a method sets the service container into the Response
 func (r *Response) InjectServiceContainer(g *Gym) {
-	r.App = g
+	r.app = g
 }
 
 // CallYourBoss is a method gets the service container
 func (r *Response) GetServiceContainer() *Gym {
-	return r.App
+	return r.app
 }
 
 func (r *Response) CallMethod(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 }
 
 // JsonResponse is a method prepares the JSON response
 func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) {
-	r.Response = resp
+	rsp, err := json.Marshal(resp)
+	if err != nil {
+		log.Error(fmt.Sprintf("JSON err: %s", err))
+		r.StatusCode = HTTPStatusInternalServerError
+		rsp, _ = json.Marshal(map[string]string{"error": "Error when parsing Json Response"})
+		return
+	}
+	r.Response = rsp
 	r.StatusCode = statusCode
 	var respHeader http.Header
 	if header != nil {
@@ -71,25 +78,18 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 }
 
 // wait is a method does preparation for sending response
-func (r *Response) Wait(rw http.ResponseWriter) {
+func (r *Response) wait(rw http.ResponseWriter) {
 	r.Rw = rw
 	r.StatusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
-func (r *Response) Send() {
+func (r *Response) send() {
 	for k, v := range r.Header {
 		for _, h := range v {
 			r.Rw.Header().Add(k, h)
 		}
 	}
-	// r.rw.WriteHeader(r.statusCode)
-	rsp, err := json.Marshal(r.Response)
-	if err != nil {
-		log.Error(fmt.Sprintf("JSON err: %s", err))
-		r.StatusCode = HTTPStatusInternalServerError
-		rsp, _ = json.Marshal(map[string]string{"error": "Error when parsing Json Response"})
-	}
 	r.Rw.WriteHeader(r.StatusCode)
-	r.Rw.Write(rsp)
+	r.Rw.Write(r.Response)
 }

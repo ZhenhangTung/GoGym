@@ -21,7 +21,7 @@ const (
 
 // Request service
 type Request struct {
-	App *Gym // Service Container
+	app *Gym // Service Container
 
 	Method  string
 	Header  http.Header
@@ -38,12 +38,12 @@ func (r *Request) Prepare(g *Gym) {
 
 // WhoIsYourBoss is a method sets the service container into the Request
 func (r *Request) InjectServiceContainer(g *Gym) {
-	r.App = g
+	r.app = g
 }
 
 // CallYourBoss is a method gets the service container
 func (r *Request) GetServiceContainer() *Gym {
-	return r.App
+	return r.app
 }
 
 func (r *Request) CallMethod(method string, param []interface{}) []reflect.Value {
@@ -51,7 +51,7 @@ func (r *Request) CallMethod(method string, param []interface{}) []reflect.Value
 }
 
 // Accept is a method gets the http request and parse it
-func (r *Request) Accept(request *http.Request) {
+func (r *Request) accept(request *http.Request) {
 	request.ParseForm()
 	r.Method = request.Method
 	r.Query = request.Form
@@ -60,7 +60,7 @@ func (r *Request) Accept(request *http.Request) {
 }
 
 // BindPathVar is a method binding values to related variable in the uri
-func (r *Request) BindPathVar(tokens []Token) {
+func (r *Request) bindPathVar(tokens []Token) {
 	for _, v := range tokens {
 		if v.IsParam {
 			r.PathVar[v.Name] = v.Value
