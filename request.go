@@ -27,13 +27,13 @@ type Request struct {
 	Header  http.Header
 	Query   url.Values
 	Form    url.Values
-	PathVar map[string]string
+	PathVar PathVar
 }
 
 // Prepare is a method prepares the Request service
 func (r *Request) Prepare(g *Gym) {
 	r.InjectServiceContainer(g)
-	r.PathVar = make(map[string]string)
+	r.PathVar.variables = make(map[string]string)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Request
@@ -63,7 +63,28 @@ func (r *Request) accept(request *http.Request) {
 func (r *Request) bindPathVar(tokens []Token) {
 	for _, v := range tokens {
 		if v.IsParam {
-			r.PathVar[v.Name] = v.Value
+			//r.PathVar[v.Name] = v.Value
+			r.PathVar.Set(v.Name, v.Value)
 		}
 	}
+}
+
+type PathVar struct {
+	variables map[string]string
+}
+
+func (p *PathVar) Get(varName string) string {
+	value, isSet := p.variables[varName]
+	if !isSet {
+		return ""
+	}
+	return value
+}
+
+func (p *PathVar) Set(varName, value string) {
+	p.variables[varName] = value
+}
+
+func (p *PathVar) All() map[string]string {
+	return p.variables
 }
