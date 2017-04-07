@@ -232,8 +232,8 @@ func TestHeader(t *testing.T) {
 
 	// Check if all expected headers exist in response
 	for k, v := range expectedHeaders {
-		header, isset := responseHeaders[k]
-		if !isset {
+		header, isSet := responseHeaders[k]
+		if !isSet {
 			t.Error("response headers didn't match as expected")
 		}
 		if !reflect.DeepEqual(v, header) {

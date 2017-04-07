@@ -3,14 +3,10 @@ package GoGym
 import (
 	"reflect"
 	"testing"
-	//"fmt"
 	"encoding/json"
-	//"fmt"
 	"net/http"
 	"strings"
 	"time"
-	//"fmt"
-	//"fmt"
 	"io"
 )
 

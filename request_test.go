@@ -1,7 +1,10 @@
 package GoGym
 
 import (
+	"net/http"
+	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -51,5 +54,39 @@ func TestRequest_BindPathVar(t *testing.T) {
 }
 
 func TestRequest_Accept(t *testing.T) {
-
+	gym := new(Gym)
+	gym.Prepare()
+	go gym.OpenAt(2010)
+	httpRequest, _ := http.NewRequest("GET", "http://localhost:2010", strings.NewReader(""))
+	httpRequest.Header.Add("Foo", "Bar")
+	q := httpRequest.URL.Query()
+	q.Add("api_key", "gogym")
+	httpRequest.URL.RawQuery = q.Encode()
+	_, err := myClient.Do(httpRequest)
+	if err != nil {
+		t.Error(err)
+	}
+	query := url.Values{}
+	query["api_key"] = []string{"gogym"}
+	if !reflect.DeepEqual(query, gym.Request.Query) {
+		t.Error("Error when accepting query form")
+	}
+	if gym.Request.Method != "GET" {
+		t.Error("Error when accepting request method")
+	}
+	if gym.Request.Header.Get("Foo") != "Bar" {
+		t.Error("Error when accepting request header")
+	}
 }
+
+func TestRequest_Accept_PostForm(t *testing.T) {
+	gym := new(Gym)
+	gym.Prepare()
+	go gym.OpenAt(2011)
+	requestForm := url.Values{"foo": {"bar", "baz"}}
+	myClient.PostForm("http://localhost:2011/requests/form-method/form", requestForm)
+	if !reflect.DeepEqual(requestForm, gym.Request.Form) {
+		t.Error("Error when accepting request form")
+	}
+}
+

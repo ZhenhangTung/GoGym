@@ -59,7 +59,7 @@ func (g *Gym) GetService(name string) GymService {
 	}
 */
 func (g *Gym) CallService(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 
 }
 
