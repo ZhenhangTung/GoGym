@@ -1,7 +1,11 @@
 package GoGym
 
 import (
+	"encoding/json"
+	"net/http"
 	"reflect"
+	"strings"
+	"time"
 )
 
 // GetType is a function gets the type of value
@@ -27,4 +31,15 @@ func CallServiceMethodWithReflect(g GymService, method string, param []interface
 	}
 	results := reflect.ValueOf(g).MethodByName(method).Call(in)
 	return results
+}
+
+func GetJson(method, url string, target interface{}) error {
+	var myClient = &http.Client{Timeout: 10 * time.Second}
+	request, _ := http.NewRequest(method, url, strings.NewReader(""))
+	response, err := myClient.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	return json.NewDecoder(response.Body).Decode(target)
 }

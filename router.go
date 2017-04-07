@@ -126,7 +126,7 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 		if !methodMatch {
 			rsp := make(map[string]interface{})
 			rsp["err"] = "Method not allowed"
-			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
+			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
 		} else {
 			// Binding path variables
 			r.GetServiceContainer().Request.BindPathVar(handlingRoute.Compiled.Tokens)

@@ -4,6 +4,14 @@ import (
 	"reflect"
 	"testing"
 	//"fmt"
+	"encoding/json"
+	//"fmt"
+	"net/http"
+	"strings"
+	"time"
+	//"fmt"
+	//"fmt"
+	"io"
 )
 
 func TestRouter_Prepare(t *testing.T) {
@@ -132,8 +140,42 @@ func TestRouter_Delete(t *testing.T) {
 	}
 }
 
-func TestRouter_ServeHTTP(t *testing.T) {
+func TestRouter_ServeHTTP_HTTP200(t *testing.T) {
+	gym := Gym{}
+	gym.Prepare()
+	gym.Router.RegisterController(&FooController{})
+	gym.Router.Get("/foo", "FooController@Index")
+	go gym.OpenAt(2000)
+	uri := "http://localhost:2000/foo"
+	response := FooResponse{}
+	GetJson("GET", uri, &response)
+	if response.Msg != "Hello World" {
+		t.Error("The result is not same as expected")
+	}
 
+}
+
+func TestRouter_ServeHTTP_HTTP405(t *testing.T) {
+	gym := Gym{}
+	gym.Prepare()
+	gym.Router.RegisterController(&FooController{})
+	gym.Router.Get("/foo", "FooController@Index")
+	go gym.OpenAt(2001)
+	errRsp := ErrResponse{}
+	var client = &http.Client{Timeout: 10 * time.Second}
+	request, _ := http.NewRequest("POST", "http://localhost:2001/foo", strings.NewReader(""))
+	rsp, err := client.Do(request)
+	if err != nil {
+		t.Errorf("Response error: %s", err)
+	}
+	if rsp.StatusCode != 405 {
+		t.Error("The status code is not same as expected")
+	}
+	json.NewDecoder(rsp.Body).Decode(&errRsp)
+	defer rsp.Body.Close()
+	if errRsp.Err != "Method not allowed" {
+		t.Error("The error info is not same as expected")
+	}
 }
 
 func TestRouter_FindRoute(t *testing.T) {
@@ -171,7 +213,21 @@ func TestRouter_FindRoute(t *testing.T) {
 }
 
 func TestRouter_Handle(t *testing.T) {
-
+	router := Router{}
+	router.App = new(Gym)
+	router.ControllerRegistry = make(map[string]interface{})
+	router.RegisterController(new(FooController))
+	reader := strings.NewReader("")
+	request, err := http.NewRequest("GET", "/foo", io.LimitReader(reader, 90))
+	if err != nil {
+		t.Error("Error when creating new request.")
+	}
+	router.NewRoute("/foo", []string{GETMethod}, "FooController@Bar")
+	route := router.RouteCollection[0]
+	router.Handle(route, RW{}, request)
+	if Bar.Msg != "Hello Bar" {
+		t.Error("Something went wrong when handling the request")
+	}
 }
 
 func TestRouter_RegisterController(t *testing.T) {
@@ -183,4 +239,38 @@ func TestRouter_RegisterController(t *testing.T) {
 	if !reflect.DeepEqual(expected, router.ControllerRegistry) {
 		t.Error("failed to register controller")
 	}
+}
+
+type FooController struct{}
+
+type FooResponse struct {
+	Msg string
+}
+
+func (f FooController) Index(g *Gym) {
+	g.Response.JsonResponse(map[string]string{"msg": "Hello World"}, 200, http.Header{})
+}
+
+var Bar FooResponse
+
+func (f FooController) Bar(g *Gym) {
+	Bar.Msg = "Hello Bar"
+}
+
+type ErrResponse struct {
+	Err string
+}
+
+type RW struct{}
+
+func (rw RW) Header() http.Header {
+	return http.Header{}
+}
+
+func (rw RW) Write([]byte) (int, error) {
+	return 0, nil
+}
+
+func (rw RW) WriteHeader(int) {
+
 }

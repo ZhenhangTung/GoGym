@@ -17,7 +17,6 @@ var baseUri string
 func init() {
 	fmt.Println("Tests started")
 	port = 3000
-	//baseUri = fmt.Sprintf("http://localhost:%v", port)
 }
 
 var formTest url.Values
