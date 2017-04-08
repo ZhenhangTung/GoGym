@@ -98,11 +98,11 @@ func main() {
 * (Router)[http://zhenhangtung.github.io/GoGym/doc/router.html]
 * (Request)[http://zhenhangtung.github.io/GoGym/doc/request.html]
 * (Response)[http://zhenhangtung.github.io/GoGym/doc/response.html]
-* (Core Service)[http://zhenhangtung.github.io/GoGym/doc/gym.html]
+* (Service Container)[http://zhenhangtung.github.io/GoGym/doc/gym.html]
 
 
 ## Roadmap
-* v0.1: Receive request and send JSON response. [Done]
+* v0.1: Receive request and send JSON response. [Finished]
 * v0.2: Support route parameters. **[In development]**
 * v0.3: Support using functions directly when defining routes.
 * v0.4: Support middleware.
