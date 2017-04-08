@@ -15,7 +15,7 @@ func TestRequest_Prepare(t *testing.T) {
 	if !reflect.DeepEqual(request.GetServiceContainer(), gym) {
 		t.Error("Failed to prepare request")
 	}
-	if !reflect.DeepEqual(request.PathVar.All(), make(map[string]string)) {
+	if !reflect.DeepEqual(request.RouteParam.All(), make(map[string]string)) {
 		t.Error("Failed to prepare request")
 	}
 }
@@ -41,14 +41,14 @@ func TestRequest_GetServiceContainer(t *testing.T) {
 
 func TestRequest_BindPathVar(t *testing.T) {
 	request := Request{}
-	request.PathVar.variables = make(map[string]string)
+	request.RouteParam.variables = make(map[string]string)
 	var tokens []Token
 	tk1 := Token{Name: "Foo", Value: "Foo", IsParam: false}
 	tk2 := Token{Name: "Bar", Value: "yes", IsParam: true}
 	tokens = append(tokens, tk1, tk2)
 	request.bindPathVar(tokens)
 	expected := map[string]string{"Bar": "yes"}
-	if !reflect.DeepEqual(expected, request.PathVar.All()) {
+	if !reflect.DeepEqual(expected, request.RouteParam.All()) {
 		t.Error("Something went wrong when binding path var")
 	}
 }

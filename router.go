@@ -170,3 +170,10 @@ func (r *Router) RegisterController(controller interface{}) {
 	controllerType := GetType(controller)
 	r.ControllerRegistry[controllerType] = controller
 }
+
+// RegisterControllers is a method registers a bunch of controllers into controllerRegistry
+func (r *Router) RegisterControllers(controllers []interface{}) {
+	for _, v := range controllers {
+		r.RegisterController(v)
+	}
+}

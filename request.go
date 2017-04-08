@@ -23,17 +23,17 @@ const (
 type Request struct {
 	app *Gym // Service Container
 
-	Method  string
-	Header  http.Header
-	Query   url.Values
-	Form    url.Values
-	PathVar PathVar
+	Method     string
+	Header     http.Header
+	Query      url.Values
+	Form       url.Values
+	RouteParam RouteParam
 }
 
 // Prepare is a method prepares the Request service
 func (r *Request) Prepare(g *Gym) {
 	r.InjectServiceContainer(g)
-	r.PathVar.variables = make(map[string]string)
+	r.RouteParam.variables = make(map[string]string)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Request
@@ -64,19 +64,19 @@ func (r *Request) bindPathVar(tokens []Token) {
 	for _, v := range tokens {
 		if v.IsParam {
 			//r.PathVar[v.Name] = v.Value
-			r.PathVar.Set(v.Name, v.Value)
+			r.RouteParam.Set(v.Name, v.Value)
 		}
 	}
 }
 
 // PathVar stores all variables of defined path
-type PathVar struct {
+type RouteParam struct {
 	variables map[string]string
 }
 
 // Get is a PathVar getter
-func (p *PathVar) Get(varName string) string {
-	value, isSet := p.variables[varName]
+func (r *RouteParam) Get(varName string) string {
+	value, isSet := r.variables[varName]
 	if !isSet {
 		return ""
 	}
@@ -84,11 +84,11 @@ func (p *PathVar) Get(varName string) string {
 }
 
 // Set is a PathVar setter
-func (p *PathVar) Set(varName, value string) {
-	p.variables[varName] = value
+func (r *RouteParam) Set(varName, value string) {
+	r.variables[varName] = value
 }
 
 // All is a method for getting all path variables
-func (p *PathVar) All() map[string]string {
-	return p.variables
+func (r *RouteParam) All() map[string]string {
+	return r.variables
 }
