@@ -1,7 +1,7 @@
 
 
 
-# GoGym  
+# GoGym
 
 
 [![Build Status](https://travis-ci.org/ZhenhangTung/GoGym.svg?branch=master)](https://travis-ci.org/ZhenhangTung/GoGym)
@@ -23,7 +23,7 @@ Icon made by @Beth Wardolf
 	$ go get github.com/sirupsen/logrus
 	```
 
-* Install the package from the command line: 
+* Install the package from the command line:
 
 	```bash
 	$ go get github.com/ZhenhangTung/GoGym
@@ -109,7 +109,7 @@ func main() {
 
 ## Contribution
 
-Your contribution to ```GoGym``` development is very welcome!
+Your contribution to ```GoGym``` development is very welcomed!
 You may contribute in the following ways:
 
 * [Post issues and feedbacks](https://github.com/ZhenhangTung/GoGym/issues)
