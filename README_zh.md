@@ -88,10 +88,10 @@ func main() {
 ```
 
 ## API 文档
-* (Router)[http://zhenhangtung.github.io/GoGym/doc/router.html]
-* (Request)[http://zhenhangtung.github.io/GoGym/doc/request.html]
-* (Response)[http://zhenhangtung.github.io/GoGym/doc/response.html]
-* (Service Container)[http://zhenhangtung.github.io/GoGym/doc/gym.html]
+* (Router)[http://zhenhangtung.github.io/GoGym/doc/router_zh.html]
+* (Request)[http://zhenhangtung.github.io/GoGym/doc/request_zh.html]
+* (Response)[http://zhenhangtung.github.io/GoGym/doc/response_zh.html]
+* (Service Container)[http://zhenhangtung.github.io/GoGym/doc/gym_zh.html]
 
 
 ## 项目规划图
