@@ -112,9 +112,9 @@ func main() {
 Your contribution to ```GoGym``` development is very welcomed!
 You may contribute in the following ways:
 
-* [Post issues and feedbacks](https://github.com/ZhenhangTung/GoGym/issues)
-* Submit fixes, features via Pull Request
-* Write/polish documentation
+* [Post issues and feedbacks](https://github.com/ZhenhangTung/GoGym/issues).
+* Submit fixes, features via the Pull Request.
+* Write/polish the documentation. The documentation exists in folder ```doc```.
 
 
 ## Contributors
