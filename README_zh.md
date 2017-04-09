@@ -106,9 +106,9 @@ func main() {
 十分欢迎参与```GoGym```的开发
 你可以通过如下的方式参与:
 
-* [发布issue或者feedback](https://github.com/ZhenhangTung/GoGym/issues)
-* 通过Pull Request来提交bug fix或者new feature
-* 写文档或者修饰文档
+* [发布issue或者feedback](https://github.com/ZhenhangTung/GoGym/issues)。
+* 通过Pull Request来提交bug fix或者new feature。
+* 写文档或者修饰文档，文档在项目文件夹```doc```下面。
 
 
 ## 项目贡献成员
