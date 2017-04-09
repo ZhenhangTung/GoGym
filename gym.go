@@ -22,7 +22,7 @@ func (g *Gym) RegisterService(name string, service GymService) {
 	g.bindService(name, service)
 }
 
-// RegisterServices is a method registers mutiple services
+// RegisterServices is a method registers multiple services
 func (g *Gym) RegisterServices(services map[string]GymService) {
 	for name, service := range services {
 		g.bindService(name, service)
@@ -34,7 +34,7 @@ func (g *Gym) bindService(name string, service GymService) {
 	g.services[name] = service
 }
 
-// GetService is a fucntion gets a service
+// GetService is a method gets a service
 func (g *Gym) GetService(name string) GymService {
 	return g.services[name]
 }
@@ -59,7 +59,7 @@ func (g *Gym) GetService(name string) GymService {
 	}
 */
 func (g *Gym) CallService(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 
 }
 
@@ -77,7 +77,6 @@ func (g *Gym) Prepare() *Gym {
 
 // OpenAt is a method which is used to serve the service
 func (g *Gym) OpenAt(port int) {
-	g.Router.RegisterHandleFunc()
 	fullPort := fmt.Sprintf(":%d", port)
-	http.ListenAndServe(fullPort, nil)
+	http.ListenAndServe(fullPort, g.Router)
 }

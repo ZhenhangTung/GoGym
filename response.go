@@ -3,15 +3,16 @@ package GoGym
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"reflect"
 )
 
 const (
-	HTTPStatusMethodNotAllowed = 405
-	HTTPStatusOK               = 200
-	HTTPStatusNotFound         = 404
+	HTTPStatusMethodNotAllowed    = 405
+	HTTPStatusOK                  = 200
+	HTTPStatusNotFound            = 404
+	HTTPStatusInternalServerError = 500
 )
 
 const (
@@ -28,37 +29,43 @@ const (
 
 // Response service
 type Response struct {
-	boss *Gym // Service Container
-
-	rw         http.ResponseWriter
-	statusCode int
-	respone    interface{}
-	header     http.Header
+	app        *Gym // Service Container
+	Rw         http.ResponseWriter
+	StatusCode int
+	Response   []byte
+	Header     http.Header
 }
 
 // Prepare is a method prepares the Response service
 func (r *Response) Prepare(g *Gym) {
-	r.WhoIsYourBoss(g)
+	r.InjectServiceContainer(g)
 }
 
 // WhoIsYourBoss is a method sets the service container into the Response
-func (r *Response) WhoIsYourBoss(g *Gym) {
-	r.boss = g
+func (r *Response) InjectServiceContainer(g *Gym) {
+	r.app = g
 }
 
 // CallYourBoss is a method gets the service container
-func (r *Response) CallYourBoss() *Gym {
-	return r.boss
+func (r *Response) GetServiceContainer() *Gym {
+	return r.app
 }
 
 func (r *Response) CallMethod(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 }
 
 // JsonResponse is a method prepares the JSON response
 func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) {
-	r.respone = resp
-	r.statusCode = statusCode
+	rsp, err := json.Marshal(resp)
+	if err != nil {
+		log.Error(fmt.Sprintf("JSON err: %s", err))
+		r.StatusCode = HTTPStatusInternalServerError
+		rsp, _ = json.Marshal(map[string]string{"error": "Error when parsing Json Response"})
+		return
+	}
+	r.Response = rsp
+	r.StatusCode = statusCode
 	var respHeader http.Header
 	if header != nil {
 		respHeader = header
@@ -67,27 +74,22 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 		respHeader.Add("Content-Type", MIME_APP_JSON)
 	}
 
-	r.header = respHeader
+	r.Header = respHeader
 }
 
 // wait is a method does preparation for sending response
 func (r *Response) wait(rw http.ResponseWriter) {
-	r.rw = rw
-	r.statusCode = HTTPStatusOK
+	r.Rw = rw
+	r.StatusCode = HTTPStatusOK
 }
 
 // send is a method sending the http response
 func (r *Response) send() {
-	for k, v := range r.header {
+	for k, v := range r.Header {
 		for _, h := range v {
-			r.rw.Header().Add(k, h)
+			r.Rw.Header().Add(k, h)
 		}
 	}
-	r.rw.WriteHeader(r.statusCode)
-	rsp, err := json.Marshal(r.respone)
-	if err != nil {
-		// TODO: logging error
-		glog.Error(fmt.Sprintf("JSON err: %s", err))
-	}
-	r.rw.Write(rsp)
+	r.Rw.WriteHeader(r.StatusCode)
+	r.Rw.Write(r.Response)
 }

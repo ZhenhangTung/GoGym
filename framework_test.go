@@ -11,8 +11,12 @@ import (
 	"time"
 )
 
+var port int
+var baseUri string
+
 func init() {
 	fmt.Println("Tests started")
+	port = 3000
 }
 
 var formTest url.Values
@@ -51,20 +55,17 @@ func (IndexController *IndexController) Patch(g *Gym) {
 }
 
 func (IndexController *IndexController) QueryForm(g *Gym) {
-	// formTest = request["query"]
 	formTest = g.Request.Query
 	g.Response.JsonResponse(helloResponse, 200, http.Header{})
 }
 
 func (IndexController *IndexController) PostForm(g *Gym) {
-	// formTest = request["form"]
 	formTest = g.Request.Form
 	g.Response.JsonResponse(helloResponse, 200, http.Header{})
 }
 
 func (IndexController *IndexController) SetHeaders(g *Gym) {
 	g.Response.JsonResponse(helloResponse, 200, http.Header{"Foo": {"Bar", "Baz"}, "Gogym": {"Yeah"}})
-	// return 200, helloResponse, http.Header{"Foo": {"Bar", "Baz"}, "Gogym": {"Yeah"}}
 }
 
 func TestGet(t *testing.T) {
@@ -72,9 +73,11 @@ func TestGet(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Get("/", "IndexController@Index")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJsonWithGetMethod("http://localhost:3000", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJsonWithGetMethod(baseUri, hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -88,9 +91,11 @@ func TestPost(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Post("/requests/post", "IndexController@Post")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJsonWithPostMethod("http://localhost:3000/requests/post", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJsonWithPostMethod(baseUri+"/requests/post", hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -104,9 +109,11 @@ func TestPut(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Put("/requests/put", "IndexController@Put")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJson(PUTMethod, "http://localhost:3000/requests/put", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJson(PUTMethod, baseUri+"/requests/put", hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -120,9 +127,11 @@ func TestDelete(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Delete("/requests/delete", "IndexController@Delete")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJson(DELETEMethod, "http://localhost:3000/requests/delete", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJson(DELETEMethod, baseUri+"/requests/delete", hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -136,9 +145,11 @@ func TestOptions(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Options("/requests/options", "IndexController@Options")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJson(OPTIONSMethod, "http://localhost:3000/requests/options", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJson(OPTIONSMethod, baseUri+"/requests/options", hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -152,9 +163,11 @@ func TestPatch(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Patch("/requests/patch", "IndexController@Patch")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
 	hello := &HelloFormat{}
-	err := getJson(PATCHMethod, "http://localhost:3000/requests/patch", hello)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	err := getJson(PATCHMethod, baseUri+"/requests/patch", hello)
 	if err != nil {
 		t.Error("resp error")
 	}
@@ -168,9 +181,11 @@ func TestRequestWithQuery(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Get("/requests/form-method/query", "IndexController@QueryForm")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
 	var requestQuery = url.Values{"api_key": {"gogym"}, "foo": {"bar&baz"}}
-	request, _ := http.NewRequest("GET", "http://localhost:3000/requests/form-method/query", nil)
+	request, _ := http.NewRequest("GET", baseUri+"/requests/form-method/query", nil)
 	q := request.URL.Query()
 	q.Add("api_key", "gogym")
 	q.Add("foo", "bar&baz")
@@ -190,9 +205,11 @@ func TestRequestWithForm(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Post("/requests/form-method/form", "IndexController@PostForm")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
+	go gym.OpenAt(port)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
 	requestForm := url.Values{"foo": {"bar", "baz"}}
-	myClient.PostForm("http://localhost:3000/requests/form-method/form", requestForm)
+	myClient.PostForm(baseUri+"/requests/form-method/form", requestForm)
 	if !reflect.DeepEqual(formTest, requestForm) {
 		t.Error("received form is not same as requested form")
 	}
@@ -203,8 +220,10 @@ func TestHeader(t *testing.T) {
 	gym.Prepare()
 	gym.Router.Get("/requests/headers", "IndexController@SetHeaders")
 	gym.Router.RegisterController(&IndexController{})
-	go gym.OpenAt(3000)
-	r, err := myClient.Get("http://localhost:3000/requests/headers")
+	go gym.OpenAt(port)
+	baseUri = fmt.Sprintf("http://localhost:%v", port)
+	port++
+	r, err := myClient.Get(baseUri + "/requests/headers")
 	if err != nil {
 		t.Error(err)
 	}
@@ -213,8 +232,8 @@ func TestHeader(t *testing.T) {
 
 	// Check if all expected headers exist in response
 	for k, v := range expectedHeaders {
-		header, isset := responseHeaders[k]
-		if !isset {
+		header, isSet := responseHeaders[k]
+		if !isSet {
 			t.Error("response headers didn't match as expected")
 		}
 		if !reflect.DeepEqual(v, header) {

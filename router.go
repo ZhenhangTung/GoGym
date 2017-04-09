@@ -1,7 +1,7 @@
 package GoGym
 
 import (
-	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"reflect"
 	"strings"
@@ -13,126 +13,167 @@ const (
 
 // Router service
 type Router struct {
-	boss *Gym // Service Container
-
-	// controllerRegistry is where all registered controllers exist
-	controllerRegistry map[string]interface{}
-	//registeredPathAndController is a mapping of paths and controllers
-	registeredPathAndController map[string]map[string]map[string]string
+	// App is the Service Container
+	App *Gym
+	// ControllerRegistry is where all registered controllers exist
+	ControllerRegistry map[string]interface{}
+	MethodVerbs        []string
+	RouteCollection    []Route
 }
 
 // Prepare is a method prepares the router service
 func (r *Router) Prepare(g *Gym) {
-	r.WhoIsYourBoss(g)
-	r.controllerRegistry = make(map[string]interface{})
-	r.registeredPathAndController = make(map[string]map[string]map[string]string)
+	r.InjectServiceContainer(g)
+	r.ControllerRegistry = make(map[string]interface{})
+	r.MethodVerbs = []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}
 }
 
-// WhoIsYourBoss is a method sets the service container into the Router
-func (r *Router) WhoIsYourBoss(g *Gym) {
-	r.boss = g
+// InjectServiceContainer is a method sets the service container into the Router
+func (r *Router) InjectServiceContainer(g *Gym) {
+	r.App = g
 }
 
-// CallYourBoss is a method gets the service container
-func (r *Router) CallYourBoss() *Gym {
-	return r.boss
+// GetServiceContainer is a method gets the service container
+func (r *Router) GetServiceContainer() *Gym {
+	return r.App
 }
 
 func (r *Router) CallMethod(method string, param []interface{}) []reflect.Value {
-	return []reflect.Value{}
+	return nil
 }
 
-// Get is a fucntion handles GET requests
-func (r *Router) Get(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(GETMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+// NewRoute is a method that creates a new route to RouteCollection
+func (r *Router) NewRoute(uri string, methods []string, action string) {
+	if !r.IsActionLegal(action) {
+		log.Fatalf("Action %s is illegal", action)
+		return
+	}
+	var route Route
+	route.uri = uri
+	route.methods = methods
+	route.action = action
+	route.extractTokens(route.uri)
+	route.compile(route.uri)
+	r.RouteCollection = append(r.RouteCollection, route)
 }
 
-// Post is a fucntion handles POST requests
-func (r *Router) Post(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(POSTMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+// IsActionLegal checks if an action is legal
+func (r *Router) IsActionLegal(action string) bool {
+	result := false
+	if strings.Contains(action, "@") {
+		result = true
+	}
+	return result
+}
+
+// Get is a method handles GET requests
+func (r *Router) Get(path, action string) {
+	methods := []string{GETMethod}
+	r.NewRoute(path, methods, action)
+}
+
+// Post is a method handles POST requests
+func (r *Router) Post(path, action string) {
+	methods := []string{POSTMethod}
+	r.NewRoute(path, methods, action)
 }
 
 // Put is a method handles PUT requests
-func (r *Router) Put(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(PUTMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+func (r *Router) Put(path, action string) {
+	methods := []string{PUTMethod}
+	r.NewRoute(path, methods, action)
 }
 
 // Patch is a method handles PATCH requests
-func (r *Router) Patch(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(PATCHMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+func (r *Router) Patch(path, action string) {
+	methods := []string{PATCHMethod}
+	r.NewRoute(path, methods, action)
 }
 
 // Options is a method handles Options requests
-func (r *Router) Options(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(OPTIONSMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+func (r *Router) Options(path, action string) {
+	methods := []string{OPTIONSMethod}
+	r.NewRoute(path, methods, action)
 }
 
 // Delete is a method handles Delete requests
-func (r *Router) Delete(path, controllerWithActionString string) {
-	mapping := r.mappingRequestMethodWithControllerAndActions(DELETEMethod, path, controllerWithActionString)
-	r.registeredPathAndController[path] = mapping
+func (r *Router) Delete(path, action string) {
+	methods := []string{DELETEMethod}
+	r.NewRoute(path, methods, action)
 }
 
-// mappingRequestMethodWithControllerAndActions is a method for mapping request method with controllers
-// which containing actions
-func (r *Router) mappingRequestMethodWithControllerAndActions(requestMethod, path, controllerWithActionString string) map[string]map[string]string {
-	mappingResult := make(map[string]map[string]string)
-	if length := len(r.registeredPathAndController[path]); length > 0 {
-		mappingResult = r.registeredPathAndController[path]
-	}
-	controllerAndActionSlice := strings.Split(controllerWithActionString, "@")
-	controller := controllerAndActionSlice[0]
-	action := controllerAndActionSlice[1]
-	controllerAndActionMap := map[string]string{controller: action}
-	mappingResult[requestMethod] = controllerAndActionMap
-	return mappingResult
-}
+// ServeHTTP is a method serve http service
+func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
+	r.GetServiceContainer().Request.accept(request)
+	r.GetServiceContainer().Response.wait(rw)
+	routes := r.FindRoute(request.URL.Path)
+	if routes == nil {
+		rsp := make(map[string]interface{})
+		rsp["err"] = "Not found"
+		r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
 
-// HandleRequest is a method to handle http request
-func (r *Router) HandleRequest(controllers map[string]map[string]string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, request *http.Request) {
-		r.CallYourBoss().Request.accept(request)
-		r.CallYourBoss().Response.wait(rw)
-		macthedControllers, ok := controllers[r.CallYourBoss().Request.Method]
-		if !ok {
-			rw.WriteHeader(HTTPStatusMethodNotAllowed)
+	} else {
+		methodMatch := false
+		var handlingRoute Route
+		for k, route := range routes {
+			for _, mth := range route.methods {
+				if mth == request.Method {
+					methodMatch = true
+					handlingRoute = routes[k]
+				}
+			}
 		}
-		for k, v := range macthedControllers {
-			controllerKey := "*" + k
-			controller := r.controllerRegistry[controllerKey]
-			in := make([]reflect.Value, 1)
-			in[0] = reflect.ValueOf(r.CallYourBoss())
-			reflect.ValueOf(controller).MethodByName(v).Call(in)
-			r.CallYourBoss().Response.send()
+		if !methodMatch {
+			rsp := make(map[string]interface{})
+			rsp["err"] = "Method not allowed"
+			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
+		} else {
+			// Binding path variables
+			r.GetServiceContainer().Request.bindPathVar(handlingRoute.compiled.Tokens)
+			// Handling request
+			r.Handle(handlingRoute, rw, request)
 		}
 	}
+	r.GetServiceContainer().Response.send()
 }
 
-// RegisterHandleFunc is a method registers a handle function to handle request from path
-func (r *Router) RegisterHandleFunc() {
-	for k, v := range r.registeredPathAndController {
-		path := k
-		if !strings.HasPrefix(k, "/") {
-			path = fmt.Sprintf("/%v", k)
+// FindRoute is a method finding a group of Route whose Uri is matched wit request Uri
+func (r *Router) FindRoute(uri string) []Route {
+	var matchedCollection []Route
+	matched := false
+	for _, route := range r.RouteCollection {
+		if route.match(uri) {
+			route.assignValuesToTokens(uri)
+			matchedCollection = append(matchedCollection, route)
+			matched = true
 		}
-		http.HandleFunc(path, r.HandleRequest(v))
 	}
+	if matched {
+		return matchedCollection
+	}
+	return nil
 }
 
-// RegisterControllers is a method registers a struct of controllers into controllerRegistry
+// Handle is a method for using route passed in to handle the request
+func (r *Router) Handle(route Route, rw http.ResponseWriter, request *http.Request) {
+	actionSlice := strings.Split(route.action, "@")
+	method := actionSlice[1]
+	controllerKey := "*" + actionSlice[0]
+	controller := r.ControllerRegistry[controllerKey]
+	in := make([]reflect.Value, 1)
+	in[0] = reflect.ValueOf(r.GetServiceContainer())
+	reflect.ValueOf(controller).MethodByName(method).Call(in)
+}
+
+// RegisterController is a method registers controller
+func (r *Router) RegisterController(controller interface{}) {
+	controllerType := GetType(controller)
+	r.ControllerRegistry[controllerType] = controller
+}
+
+// RegisterControllers is a method registers a bunch of controllers into controllerRegistry
 func (r *Router) RegisterControllers(controllers []interface{}) {
 	for _, v := range controllers {
 		r.RegisterController(v)
 	}
-}
-
-// RegisterControllers is a method registers a controller into controllerRegistry
-func (r *Router) RegisterController(controller interface{}) {
-	controllerType := GetType(controller)
-	r.controllerRegistry[controllerType] = controller
 }
