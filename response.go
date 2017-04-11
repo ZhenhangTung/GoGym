@@ -30,7 +30,6 @@ const (
 // Response service
 type Response struct {
 	app        *Gym // Service Container
-	Rw         http.ResponseWriter
 	StatusCode int
 	Response   []byte
 	Header     http.Header
@@ -56,13 +55,13 @@ func (r *Response) CallMethod(method string, param []interface{}) []reflect.Valu
 }
 
 // JsonResponse is a method prepares the JSON response
-func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) {
+func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.Header) error {
 	rsp, err := json.Marshal(resp)
 	if err != nil {
 		log.Error(fmt.Sprintf("JSON err: %s", err))
 		r.StatusCode = HTTPStatusInternalServerError
 		rsp, _ = json.Marshal(map[string]string{"error": "Error when parsing Json Response"})
-		return
+		return err
 	}
 	r.Response = rsp
 	r.StatusCode = statusCode
@@ -75,21 +74,10 @@ func (r *Response) JsonResponse(resp interface{}, statusCode int, header http.He
 	}
 
 	r.Header = respHeader
+	return nil
 }
 
 // wait is a method does preparation for sending response
-func (r *Response) wait(rw http.ResponseWriter) {
-	r.Rw = rw
+func (r *Response) wait() {
 	r.StatusCode = HTTPStatusOK
-}
-
-// send is a method sending the http response
-func (r *Response) send() {
-	for k, v := range r.Header {
-		for _, h := range v {
-			r.Rw.Header().Add(k, h)
-		}
-	}
-	r.Rw.WriteHeader(r.StatusCode)
-	r.Rw.Write(r.Response)
 }

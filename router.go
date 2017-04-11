@@ -104,13 +104,15 @@ func (r *Router) Delete(path, action string) {
 
 // ServeHTTP is a method serve http service
 func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
-	r.GetServiceContainer().Request.accept(request)
-	r.GetServiceContainer().Response.wait(rw)
+	requestService := r.GetServiceContainer().Request
+	responseService := r.GetServiceContainer().Response
+	requestService.accept(request)
+	responseService.wait()
 	routes := r.FindRoute(request.URL.Path)
 	if routes == nil {
 		rsp := make(map[string]interface{})
 		rsp["err"] = "Not found"
-		r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
+		responseService.JsonResponse(rsp, HTTPStatusNotFound, http.Header{})
 
 	} else {
 		methodMatch := false
@@ -126,15 +128,21 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 		if !methodMatch {
 			rsp := make(map[string]interface{})
 			rsp["err"] = "Method not allowed"
-			r.GetServiceContainer().Response.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
+			responseService.JsonResponse(rsp, HTTPStatusMethodNotAllowed, http.Header{})
 		} else {
 			// Binding path variables
-			r.GetServiceContainer().Request.bindPathVar(handlingRoute.compiled.Tokens)
+			requestService.bindPathVar(handlingRoute.compiled.Tokens)
 			// Handling request
 			r.Handle(handlingRoute, rw, request)
 		}
 	}
-	r.GetServiceContainer().Response.send()
+	for k, v := range responseService.Header {
+		for _, h := range v {
+			rw.Header().Add(k, h)
+		}
+	}
+	rw.WriteHeader(responseService.StatusCode)
+	rw.Write(responseService.Response)
 }
 
 // FindRoute is a method finding a group of Route whose Uri is matched wit request Uri
