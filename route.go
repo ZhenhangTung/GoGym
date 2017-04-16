@@ -18,6 +18,7 @@ type Route struct {
 	methods  []string
 	action   string
 	compiled Compiled
+	node     int
 }
 
 // Compiled is for saving Tokens and compiled regular expression

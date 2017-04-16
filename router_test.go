@@ -1,20 +1,20 @@
 package GoGym
 
 import (
-	"reflect"
-	"testing"
 	"encoding/json"
-	"net/http"
-	"strings"
-	"time"
 	"io"
+	"net/http"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
 )
 
 func TestRouter_Prepare(t *testing.T) {
 	gym := Gym{}
 	router := Router{}
 	router.Prepare(&gym)
-	expectedRouter := Router{App: &gym, ControllerRegistry: map[string]interface{}{}, MethodVerbs: []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}}
+	expectedRouter := Router{App: &gym, ControllerRegistry: map[string]interface{}{}, MethodVerbs: []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}, RouteCollection: make(map[int][]Route)}
 	if !reflect.DeepEqual(expectedRouter, router) {
 		t.Error("Failed to prepare router")
 	}
@@ -56,6 +56,7 @@ func TestRouter_IsActionLegal(t *testing.T) {
 
 func TestRouter_NewRoute(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	uri := "/foo/{bar}"
 	methods := []string{GETMethod, POSTMethod}
 	action := "IndexController@Index"
@@ -68,9 +69,12 @@ func TestRouter_NewRoute(t *testing.T) {
 	regexp := "\\/foo\\/(\\w+)$"
 	comp.Tokens = expTk
 	comp.RegExp = regexp
-	rt := Route{uri: uri, methods: methods, action: action, compiled: comp}
-	var expected []Route
-	expected = append(expected, rt)
+	rt := Route{uri: uri, methods: methods, action: action, compiled: comp, node: router.calculateNode(uri)}
+	var expected map[int][]Route
+	expected = make(map[int][]Route)
+	var expectedRoutes []Route
+	expectedRoutes = append(expectedRoutes, rt)
+	expected[router.calculateNode(uri)] = expectedRoutes
 	if !reflect.DeepEqual(expected, router.RouteCollection) {
 		t.Error("routes are not same as expected")
 	}
@@ -78,8 +82,10 @@ func TestRouter_NewRoute(t *testing.T) {
 
 func TestRouter_Get(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Get("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{GETMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Get method is not working as expected")
@@ -88,8 +94,10 @@ func TestRouter_Get(t *testing.T) {
 
 func TestRouter_Post(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Post("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{POSTMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Post method is not working as expected")
@@ -98,8 +106,10 @@ func TestRouter_Post(t *testing.T) {
 
 func TestRouter_Put(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Put("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{PUTMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Put method is not working as expected")
@@ -108,8 +118,10 @@ func TestRouter_Put(t *testing.T) {
 
 func TestRouter_Patch(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Patch("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{PATCHMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Patch method is not working as expected")
@@ -118,8 +130,10 @@ func TestRouter_Patch(t *testing.T) {
 
 func TestRouter_Options(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Options("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{OPTIONSMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Options method is not working as expected")
@@ -128,8 +142,10 @@ func TestRouter_Options(t *testing.T) {
 
 func TestRouter_Delete(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.Delete("/foo", "IndexController@Get")
 	expected := Router{}
+	expected.RouteCollection = make(map[int][]Route)
 	expected.NewRoute("/foo", []string{DELETEMethod}, "IndexController@Get")
 	if !reflect.DeepEqual(router.RouteCollection, expected.RouteCollection) {
 		t.Error("Delete method is not working as expected")
@@ -176,6 +192,7 @@ func TestRouter_ServeHTTP_HTTP405(t *testing.T) {
 
 func TestRouter_FindRoute(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.NewRoute("/foo/{bar}", []string{GETMethod}, "IndexController@Get")
 	router.NewRoute("/foo/{bar}", []string{POSTMethod}, "IndexController@Post")
 	router.NewRoute("/foo/bar/baz", []string{DELETEMethod}, "IndexController@Delete")
@@ -183,6 +200,7 @@ func TestRouter_FindRoute(t *testing.T) {
 	route.uri = "/foo/{bar}"
 	route.methods = []string{GETMethod}
 	route.action = "IndexController@Get"
+	route.node = router.calculateNode("/foo/{bar}")
 	route.extractTokens(route.uri)
 	route.compile(route.uri)
 	for k, tk := range route.compiled.Tokens {
@@ -194,32 +212,38 @@ func TestRouter_FindRoute(t *testing.T) {
 	route1.uri = "/foo/{bar}"
 	route1.methods = []string{POSTMethod}
 	route1.action = "IndexController@Post"
+	route1.node = router.calculateNode("/foo/{bar}")
 	route1.extractTokens(route.uri)
 	route1.compile(route.uri)
-	var expected []Route
-	expected = append(expected, route, route1)
 	for k, tk := range route1.compiled.Tokens {
 		if tk.Name == "bar" {
 			route1.compiled.Tokens[k].Value = "yeah"
 		}
 	}
-	if !reflect.DeepEqual(expected, router.FindRoute("/foo/yeah")) {
+	var expected map[int][]Route
+	expected = make(map[int][]Route)
+	var routes []Route
+	routes = append(routes, route, route1)
+	expected[2] = routes
+	if !reflect.DeepEqual(expected[2], router.FindRoute("/foo/yeah")) {
 		t.Error("failed to find routes")
 	}
 }
 
 func TestRouter_Handle(t *testing.T) {
 	router := Router{}
+	router.RouteCollection = make(map[int][]Route)
 	router.App = new(Gym)
 	router.ControllerRegistry = make(map[string]interface{})
 	router.RegisterController(new(FooController))
 	reader := strings.NewReader("")
+	node := router.calculateNode("/foo")
 	request, err := http.NewRequest("GET", "/foo", io.LimitReader(reader, 90))
 	if err != nil {
 		t.Error("Error when creating new request.")
 	}
 	router.NewRoute("/foo", []string{GETMethod}, "FooController@Bar")
-	route := router.RouteCollection[0]
+	route := router.RouteCollection[node][0]
 	router.Handle(route, RW{}, request)
 	if Bar.Msg != "Hello Bar" {
 		t.Error("Something went wrong when handling the request")
@@ -234,6 +258,14 @@ func TestRouter_RegisterController(t *testing.T) {
 	expected := map[string]interface{}{"*IndexController": controller}
 	if !reflect.DeepEqual(expected, router.ControllerRegistry) {
 		t.Error("failed to register controller")
+	}
+}
+
+func TestRouter_calculateNode(t *testing.T) {
+	router := Router{}
+	node := router.calculateNode("/foo/bar")
+	if node == 2 {
+		t.Error("method calculateNode doesn't work as expected")
 	}
 }
 

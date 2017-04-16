@@ -18,7 +18,7 @@ type Router struct {
 	// ControllerRegistry is where all registered controllers exist
 	ControllerRegistry map[string]interface{}
 	MethodVerbs        []string
-	RouteCollection    []Route
+	RouteCollection    map[int][]Route
 }
 
 // Prepare is a method prepares the router service
@@ -26,6 +26,7 @@ func (r *Router) Prepare(g *Gym) {
 	r.InjectServiceContainer(g)
 	r.ControllerRegistry = make(map[string]interface{})
 	r.MethodVerbs = []string{GETMethod, POSTMethod, PUTMethod, PATCHMethod, DELETEMethod, OPTIONSMethod}
+	r.RouteCollection = make(map[int][]Route)
 }
 
 // InjectServiceContainer is a method sets the service container into the Router
@@ -54,7 +55,11 @@ func (r *Router) NewRoute(uri string, methods []string, action string) {
 	route.action = action
 	route.extractTokens(route.uri)
 	route.compile(route.uri)
-	r.RouteCollection = append(r.RouteCollection, route)
+	route.node = r.calculateNode(route.uri)
+	var routes []Route
+	routes = r.RouteCollection[route.node]
+	routes = append(routes, route)
+	r.RouteCollection[route.node] = routes
 }
 
 // IsActionLegal checks if an action is legal
@@ -145,16 +150,20 @@ func (r *Router) ServeHTTP(rw http.ResponseWriter, request *http.Request) {
 	rw.Write(responseService.Response)
 }
 
-// FindRoute is a method finding a group of Route whose Uri is matched wit request Uri
+// FindRoute is a method finding a group of Route whose Uri is matched with request Uri
 func (r *Router) FindRoute(uri string) []Route {
 	var matchedCollection []Route
 	matched := false
-	for _, route := range r.RouteCollection {
-		if route.match(uri) {
-			route.assignValuesToTokens(uri)
-			matchedCollection = append(matchedCollection, route)
-			matched = true
+	node := r.calculateNode(uri)
+	for i := node - 1; i >= 0; i-- {
+		for _, route := range r.RouteCollection[node] {
+			if route.match(uri) {
+				route.assignValuesToTokens(uri)
+				matchedCollection = append(matchedCollection, route)
+				matched = true
+			}
 		}
+		node--
 	}
 	if matched {
 		return matchedCollection
@@ -184,4 +193,15 @@ func (r *Router) RegisterControllers(controllers []interface{}) {
 	for _, v := range controllers {
 		r.RegisterController(v)
 	}
+}
+
+// calculateNode is a method calculates the node value of a uri
+func (r *Router) calculateNode(uri string) int {
+	var splitStr []string
+	if uri[0:1] == Delimiter {
+		splitStr = strings.Split(uri[1:], Delimiter)
+	} else {
+		splitStr = strings.Split(uri, Delimiter)
+	}
+	return len(splitStr)
 }
